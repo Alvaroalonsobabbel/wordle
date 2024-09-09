@@ -31,13 +31,13 @@ func main() {
 
 func startRawConsole() func() {
 	fmt.Print(hideCursor)
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd())) //nolint: gosec
 	if err != nil {
 		log.Fatalf("Error setting terminal to raw mode: %v", err)
 	}
 
 	return func() {
-		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
+		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil { //nolint: gosec
 			log.Fatalf("unable to retore the terminal original state: %v", err)
 		}
 		fmt.Print(showCursor)

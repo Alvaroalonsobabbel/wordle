@@ -47,7 +47,7 @@ type renderer struct {
 	errorMsg     string
 }
 
-func New(w io.Writer, hardMode, random bool) *renderer {
+func New(w io.Writer, hardMode, _ bool) *renderer { //nolint: revive
 	r := &renderer{
 		wordle:   wordle.NewGame(hardMode),
 		keyboard: NewKB(),
@@ -59,7 +59,7 @@ func New(w io.Writer, hardMode, random bool) *renderer {
 	return r
 }
 
-func NewTestTerminal(w io.Writer, hardMode, random bool, word string) *renderer {
+func NewTestTerminal(w io.Writer, hardMode, _ bool, word string) *renderer { //nolint: revive
 	r := &renderer{
 		wordle:   wordle.NewTestWordle(hardMode, word),
 		keyboard: NewKB(),
