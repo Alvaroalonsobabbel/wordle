@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths-ignore:
+      - "**/README.md"
+      - "doc/**"
+
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - "**/README.md"
+      - "doc/**"
+
+jobs:
+  Test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: go mod download
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Run tests
+        run: make check

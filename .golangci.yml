@@ -1,0 +1,43 @@
+run:
+  # Default: isn't set
+  # From "go help modules":
+  # 1. If invoked with -mod=readonly, the go command is disallowed from the implicit
+  # automatic updating of go.mod described above. Instead, it fails when any changes
+  # to go.mod are needed. This setting is most useful to check that go.mod does
+  # not need updates, such as in a continuous integration and testing system.
+  # 2. If invoked with -mod=vendor, the go command assumes that the vendor
+  # directory holds the correct copies of dependencies and ignores
+  # the dependency descriptions in go.mod.
+  modules-download-mode: readonly
+linters:
+  disable-all: true
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - typecheck
+    - gosec
+    - unconvert
+    - govet
+    - unparam
+    - goimports
+    - whitespace
+    - gocritic
+    - gofmt
+    - revive
+    - godot
+    - stylecheck
+linters-settings:
+  errcheck:
+    # report about assignment of errors to blank identifier, e.g.:
+    # `num, _ := package.Function()`;
+    # default is false
+    check-blank: true
+  whitespace:
+    # Enforces new lines (or comments) after every multi-line if statement
+    multi-if: false
+    # Enforces new lines (or comments) after every multi-line function signature
+    multi-func: false
