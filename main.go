@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/Alvaroalonsobabbel/wordle/terminal"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/terminal"
 	"golang.org/x/term"
 )
 

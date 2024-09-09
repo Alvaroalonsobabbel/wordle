@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Alvaroalonsobabbel/wordle/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
 type keyboard struct {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Alvaroalonsobabbel/wordle/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
 // make everything unexported
