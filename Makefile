@@ -1,6 +1,3 @@
-GOOS=darwin
-GOARCH=arm64
-
 check: lint test
 
 test:
