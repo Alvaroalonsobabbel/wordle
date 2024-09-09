@@ -1,3 +1,6 @@
+GOOS=darwin
+GOARCH=arm64
+
 check: lint test
 
 test:
@@ -7,4 +10,4 @@ lint:
 	@golangci-lint run
 
 build:
-	@GOOS=darwin GOARCH=arm64 go build -o wordle
+	@go build -o wordle
