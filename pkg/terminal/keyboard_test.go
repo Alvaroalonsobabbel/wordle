@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Alvaroalonsobabbel/wordle/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 	"github.com/stretchr/testify/assert"
 )
 
