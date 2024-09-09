@@ -1,4 +1,4 @@
 #!/bin/bash
-# /usr/local/bin
-curl -sSL -o ~/Downloads "https://github.com/Alvaroalonsobabbel/wordle/releases/latest"
-chmod +x ~/Downloads/wordle
+
+sudo curl -sSL -o /usr/local/bin/wordle "https://github.com/Alvaroalonsobabbel/wordle/releases/latest"
+sudo chmod +x /usr/local/bin/wordle
