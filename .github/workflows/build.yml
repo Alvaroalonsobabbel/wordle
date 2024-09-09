@@ -40,7 +40,7 @@ jobs:
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          tag: $(cat VERSION)
+          tag_name: $(cat VERSION)
           # body: ${{ steps.get_pr_commits.outputs.release_notes }}
           files: wordle
         env:
