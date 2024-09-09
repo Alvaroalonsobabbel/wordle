@@ -7,4 +7,4 @@ lint:
 	@golangci-lint run
 
 build:
-	@go build -o wordle
+	@GOOS=darwin GOARCH=arm64 go build -o wordle
