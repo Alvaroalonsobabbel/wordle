@@ -32,6 +32,13 @@ jobs:
           make build
           chmod +x wordle
 
+      - name: Read Version
+        id: read_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "Version: $VERSION"
+          echo "::set-output name=version::$VERSION"
+
       # - name: Get PR Commits
       #   id: get_pr_commits
       #   run: |
@@ -43,7 +50,7 @@ jobs:
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: $(cat VERSION)
+          tag_name: ${{ steps.read_version.outputs.version }}
           # body: ${{ steps.get_pr_commits.outputs.release_notes }}
           files: wordle
         env:

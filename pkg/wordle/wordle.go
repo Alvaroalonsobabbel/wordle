@@ -150,7 +150,6 @@ func (g *Game) result(word string) Result {
 }
 
 // func (g *Game) pickRandomWord() {
-//
 // 	g.Wordle = strings.ToUpper(g.wordList[rand.IntN(len(g.wordList))])
 // }
 
