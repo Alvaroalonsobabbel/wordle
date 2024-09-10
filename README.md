@@ -34,8 +34,8 @@ curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/i
 
 You can check the official Wordle rules [here](https://www.nytimes.com/2023/08/01/crosswords/how-to-talk-about-wordle.html).
 
-1. Run wordle by running `wordle` in your Terminal.
-2. Have fun playing Wordle.
+1. Start Wordle by running `wordle` in your Terminal.
+2. Have fun!
 
 You can quit the game at any time by pressing `Esc` or `Ctrl C`
 
