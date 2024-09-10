@@ -47,9 +47,9 @@ type renderer struct {
 	errorMsg     string
 }
 
-func New(w io.Writer, hardMode, _ bool) *renderer { //nolint: revive
+func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
 	r := &renderer{
-		wordle:   wordle.NewGame(hardMode),
+		wordle:   wordle.NewGame(hardMode, offline),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"maps"
+	"math/rand/v2"
 	"net/http"
 	"slices"
 	"strings"
@@ -36,7 +37,7 @@ type Status int
 type Result []Status
 
 type Game struct {
-	wordle      string // unexport
+	wordle      string
 	hardMode    bool
 	guessesList []string
 	hints       []string
@@ -45,28 +46,30 @@ type Game struct {
 	hintMap     map[string]int
 }
 
-func NewGame(hardMode bool) *Game {
-	game := &Game{
-		wordle:      fetchTodaysWordle(),
-		guessesList: generateWordsList(),
-		hardMode:    hardMode,
-		hintMap:     make(map[string]int),
+func NewGame(hardMode, offline bool) *Game {
+	var wordle string
+	switch offline {
+	case true:
+		wordle = pickRandomWord()
+	case false:
+		wordle = fetchTodaysWordle()
 	}
-	game.calculateMaxHints()
 
-	return game
-}
-
-func NewTestWordle(hardMode bool, wordle string) *Game {
-	game := &Game{
+	return &Game{
 		wordle:      wordle,
 		guessesList: generateWordsList(),
 		hardMode:    hardMode,
-		hintMap:     make(map[string]int),
+		hintMap:     calculateMaxHints(wordle),
 	}
-	game.calculateMaxHints()
+}
 
-	return game
+func NewTestWordle(hardMode bool, wordle string) *Game {
+	return &Game{
+		wordle:      wordle,
+		guessesList: generateWordsList(),
+		hardMode:    hardMode,
+		hintMap:     calculateMaxHints(wordle),
+	}
 }
 
 func (g *Game) Try(word string) (Result, error) {
@@ -149,14 +152,19 @@ func (g *Game) result(word string) Result {
 	return res
 }
 
-// func (g *Game) pickRandomWord() {
-// 	g.Wordle = strings.ToUpper(g.wordList[rand.IntN(len(g.wordList))])
-// }
+func pickRandomWord() string {
+	answers := strings.Split(strings.ToUpper(answersList), "\n")
 
-func (g *Game) calculateMaxHints() {
-	for _, v := range g.wordle {
-		g.hintMap[string(v)]++
+	return strings.ToUpper(answers[rand.IntN(len(answers))]) //nolint: gosec
+}
+
+func calculateMaxHints(wordle string) map[string]int {
+	hintMap := make(map[string]int)
+	for _, v := range wordle {
+		hintMap[string(v)]++
 	}
+
+	return hintMap
 }
 
 func fetchTodaysWordle() string {
@@ -169,7 +177,7 @@ func fetchTodaysWordle() string {
 
 	resp, err := http.Get(url) //nolint: gosec
 	if err != nil {
-		log.Fatalf("unable to get toda's wordle: %v", err)
+		log.Fatalf("unable to fetch today's wordle: %v", err)
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
@@ -181,9 +189,9 @@ func fetchTodaysWordle() string {
 
 func generateWordsList() []string {
 	var (
-		allowed   = strings.Split(strings.ToUpper(allowedList), "\n")
-		responses = strings.Split(strings.ToUpper(answersList), "\n")
+		allowed = strings.Split(strings.ToUpper(allowedList), "\n")
+		answers = strings.Split(strings.ToUpper(answersList), "\n")
 	)
 
-	return slices.Concat(allowed, responses)
+	return slices.Concat(allowed, answers)
 }

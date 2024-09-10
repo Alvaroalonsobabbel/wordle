@@ -17,7 +17,7 @@ const (
 
 var (
 	hardMode bool
-	random   bool
+	offline  bool
 )
 
 func main() {
@@ -26,7 +26,7 @@ func main() {
 	restoreConsole := startRawConsole()
 	defer restoreConsole()
 
-	terminal.New(os.Stdout, hardMode, random).Start()
+	terminal.New(os.Stdout, hardMode, offline).Start()
 }
 
 func startRawConsole() func() {
@@ -46,7 +46,7 @@ func startRawConsole() func() {
 
 func evalOptions() {
 	flag.BoolVar(&hardMode, "hard", false, "Sets the Game to Hard Mode")
-	flag.BoolVar(&random, "random", false, "Picks a random word form the word collection")
+	flag.BoolVar(&offline, "offline", false, "Picks a random word form the word collection instead of the daily Wordle")
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
