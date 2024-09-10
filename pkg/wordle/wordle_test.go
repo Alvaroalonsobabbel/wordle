@@ -68,7 +68,7 @@ func TestTry(t *testing.T) {
 	t.Run("a word not in the list returns an error", func(t *testing.T) {
 		badWord := "AAAAA"
 		expectedError := fmt.Errorf("Not in word list: %s", badWord)
-		wordle := NewGame(false)
+		wordle := NewGame(false, true)
 
 		_, err := wordle.Try(badWord)
 		assert.Error(t, err)
