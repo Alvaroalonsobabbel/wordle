@@ -39,7 +39,7 @@ func TestPlayRound(t *testing.T) {
 
 	t.Run("passing an entire round adds colors to the words", func(t *testing.T) {
 		var buffer bytes.Buffer
-		terminal := NewTestTerminal(&buffer, false, false, "CHORE")
+		terminal := NewTestTerminal(&buffer, "CHORE")
 		terminal.enter(99)  // C
 		terminal.enter(104) // H
 		terminal.enter(97)  // A
@@ -63,7 +63,7 @@ func TestPlayRound(t *testing.T) {
 
 	t.Run("backspace returns one space", func(t *testing.T) {
 		var buffer bytes.Buffer
-		terminal := NewTestTerminal(&buffer, false, false, "CHORE")
+		terminal := NewTestTerminal(&buffer, "CHORE")
 		terminal.enter(99)  // C
 		terminal.enter(104) // H
 		terminal.enter(backspace)
@@ -77,7 +77,7 @@ func TestPlayRound(t *testing.T) {
 
 	t.Run("backspace on the first line does nothing", func(t *testing.T) {
 		var buffer bytes.Buffer
-		terminal := NewTestTerminal(&buffer, false, false, "CHORE")
+		terminal := NewTestTerminal(&buffer, "CHORE")
 		terminal.enter(backspace)
 		buffer.Reset()
 		terminal.Render()
@@ -88,7 +88,7 @@ func TestPlayRound(t *testing.T) {
 
 	t.Run("writing further than 5 letters does nothing", func(t *testing.T) {
 		var buffer bytes.Buffer
-		terminal := NewTestTerminal(&buffer, false, false, "CHORE")
+		terminal := NewTestTerminal(&buffer, "CHORE")
 		for range 5 {
 			terminal.enter(97) // A
 		}

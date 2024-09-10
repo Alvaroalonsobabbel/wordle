@@ -12,10 +12,6 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-// make everything unexported
-// create a channel to feed the render or a channel to accept a letter input
-// try to implement a key pressed animation
-
 const (
 	title = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
 
@@ -59,20 +55,18 @@ func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
 	return r
 }
 
-func NewTestTerminal(w io.Writer, hardMode, _ bool, word string) *renderer { //nolint: revive
-	r := &renderer{
-		wordle:   wordle.NewTestWordle(hardMode, word),
+func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
+	return &renderer{
+		wordle:   wordle.NewTestWordle(false, word),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
 	}
-	r.Render()
-
-	return r
 }
 
 func (r *renderer) Start() {
 	buf := make([]byte, 1)
+	r.Render()
 
 	for {
 		ok, msg := r.wordle.Finish()
