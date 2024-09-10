@@ -8,13 +8,6 @@ on:
       - "doc/**"
       - "bin/**"
 
-  push:
-    branches: ["main"]
-    paths-ignore:
-      - "**/README.md"
-      - "doc/**"
-      - "bin/**"
-
 jobs:
   Test:
     runs-on: ubuntu-latest
