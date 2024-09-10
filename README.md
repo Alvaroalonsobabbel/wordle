@@ -19,7 +19,7 @@ Open the terminal and run:
 curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/install.sh | bash
 ```
 
-- You'll required to enter your admin password.
+- You'll be required to enter your admin password.
 - You might be required to allow the program to run in the *System Settings - Privavacy & Security* tab.
 
 ### Compiling the binary yourself
