@@ -39,19 +39,19 @@ jobs:
           echo "Version: $VERSION"
           echo "::set-output name=version::$VERSION"
 
-      # - name: Get PR Commits
-      #   id: get_pr_commits
-      #   run: |
-      #     PR_COMMITS=$(git log --merges --pretty=format:"* %s" HEAD..HEAD~1)
-      #     echo "Release Notes:"
-      #     echo "$PR_COMMITS"
-      #     echo "::set-output name=release_notes::$PR_COMMITS"
+      - name: Get PR Commits
+        id: get_pr_commits
+        run: |
+          PR_COMMITS=$(git log --merges --pretty=format:"* %s" HEAD..HEAD~1)
+          echo "Release Notes:"
+          echo "$PR_COMMITS"
+          echo "::set-output name=release_notes::$PR_COMMITS"
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.read_version.outputs.version }}
-          # body: ${{ steps.get_pr_commits.outputs.release_notes }}
+          body: ${{ steps.get_pr_commits.outputs.release_notes }}
           files: wordle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
