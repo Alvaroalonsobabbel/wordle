@@ -3,21 +3,24 @@
 
 Play the NYT daily Wordle from the comfort of your terminal!
 
-![alt text](doc/example.gif "Title")
+<img src="doc/example.gif" alt="drawing" width="300"/>
 
 ⚠️ this assumes you know how to use the terminal! If you don't you can find out how [here](https://www.google.com/search?q=how+to+use+the+terminal).
 
 ## Install
-For ARM (Apple Sillicon) you can run in the terminal
+
+For Apple computers with ARM chips you can use the provided installer. For any other OS you'll have to compile the binary yourself.
+
+### ARM (Apple Sillicon)
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/install.sh | bash
 ```
 
-You'll required to enter your admin password.
-You might be required to enable the program to run in the System Settings.
+- You'll required to enter your admin password.
+- You might be required to allow the program to run in System Settings - Privavacy & Security tab.
 
-### Building the binary yourself
+### Compiling the binary yourself
 
 1. [Install Go](https://go.dev/doc/install)
 2. Clone the repo `git clone git@github.com:Alvaroalonsobabbel/wordle.git`
