@@ -8,11 +8,11 @@ import (
 )
 
 type keyboard struct {
-	alphabet map[string]string
+	am map[string]string
 }
 
 func NewKB() *keyboard { //nolint: revive
-	return &keyboard{alphabet: newAlphabetMap()}
+	return &keyboard{am: newAlphabetMap()}
 }
 
 func (k *keyboard) update(res wordle.Result, word string) {
@@ -20,13 +20,13 @@ func (k *keyboard) update(res wordle.Result, word string) {
 	for i, v := range status {
 		switch res[i] {
 		case wordle.Present:
-			if k.alphabet[v] != fmt.Sprintf(greenBackground, v) {
-				k.alphabet[v] = fmt.Sprintf(yellowBackground, v)
+			if k.am[v] != fmt.Sprintf(greenBackground, v) {
+				k.am[v] = fmt.Sprintf(yellowBackground, v)
 			}
 		case wordle.Correct:
-			k.alphabet[v] = fmt.Sprintf(greenBackground, v)
+			k.am[v] = fmt.Sprintf(greenBackground, v)
 		case wordle.Absent:
-			k.alphabet[v] = fmt.Sprintf(greyBackground, v)
+			k.am[v] = fmt.Sprintf(greyBackground, v)
 		}
 	}
 }
@@ -45,20 +45,20 @@ func (k *keyboard) string() string {
 
 func (k *keyboard) renderRow(row []string) string {
 	for i, v := range row {
-		row[i] = k.alphabet[v]
+		row[i] = k.am[v]
 	}
 
 	return strings.Join(row, " ")
 }
 
 func newAlphabetMap() map[string]string {
-	var alphabetMap = make(map[string]string)
+	var a = make(map[string]string)
 	for i := range 26 {
 		letter := string(rune('A' + i))
-		alphabetMap[letter] = letter
+		a[letter] = letter
 	}
-	alphabetMap["←"] = "←"
-	alphabetMap["↩︎"] = "↩︎"
+	a["←"] = "←"
+	a["↩︎"] = "↩︎"
 
-	return alphabetMap
+	return a
 }

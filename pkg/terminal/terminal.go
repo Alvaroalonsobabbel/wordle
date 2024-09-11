@@ -44,15 +44,12 @@ type renderer struct {
 }
 
 func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
-	r := &renderer{
+	return &renderer{
 		wordle:   wordle.NewGame(hardMode, offline),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
 	}
-	r.Render()
-
-	return r
 }
 
 func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
@@ -66,13 +63,13 @@ func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 
 func (r *renderer) Start() {
 	buf := make([]byte, 1)
-	r.Render()
+	r.render()
 
 	for {
 		ok, msg := r.wordle.Finish()
 		if ok {
 			r.errorMsg = fmt.Sprintf(italics, msg)
-			r.Render()
+			r.render()
 
 			return
 		}
@@ -91,7 +88,7 @@ func (r *renderer) Start() {
 	}
 }
 
-func (r *renderer) Render() {
+func (r *renderer) render() {
 	fmt.Fprint(r.printer, clearScreen)
 	fmt.Fprint(r.printer, title)
 	fmt.Fprint(r.printer, newLine)
@@ -130,7 +127,7 @@ func (r *renderer) enter(b byte) {
 	default:
 		r.rounds[r.currentRound].add(string(b))
 	}
-	r.Render()
+	r.render()
 }
 
 func (r *renderer) showResult(res wordle.Result) {
@@ -144,7 +141,7 @@ func (r *renderer) showResult(res wordle.Result) {
 		}
 
 		r.rounds[r.currentRound].status[i] = "_"
-		r.Render()
+		r.render()
 		time.Sleep(150 * time.Millisecond)
 		r.rounds[r.currentRound].status[i] = fmt.Sprintf(color, v)
 	}
@@ -155,7 +152,7 @@ func (r *renderer) showError(err error) {
 		r.errorMsg = fmt.Sprintf(italics, err.Error())
 		defer func() {
 			r.errorMsg = ""
-			r.Render()
+			r.render()
 		}()
 
 		for i := range 6 {
@@ -164,7 +161,7 @@ func (r *renderer) showError(err error) {
 			} else {
 				r.rounds[r.currentRound].animation = ""
 			}
-			r.Render()
+			r.render()
 			time.Sleep(50 * time.Millisecond)
 		}
 		time.Sleep(1500 * time.Millisecond)

@@ -14,15 +14,15 @@ func TestKeyboardUpdate(t *testing.T) {
 	kb := NewKB()
 	kb.update(result, "HELLO")
 
-	assert.Equal(t, fmt.Sprintf(greyBackground, "H"), kb.alphabet["H"])
-	assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.alphabet["E"])
-	assert.Equal(t, fmt.Sprintf(yellowBackground, "O"), kb.alphabet["O"])
+	assert.Equal(t, fmt.Sprintf(greyBackground, "H"), kb.am["H"])
+	assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.am["E"])
+	assert.Equal(t, fmt.Sprintf(yellowBackground, "O"), kb.am["O"])
 
 	t.Run("correct letters get permanently marked as greenn", func(t *testing.T) {
 		result := wordle.Result{wordle.Absent, wordle.Absent, wordle.Present, wordle.Absent, wordle.Absent}
 		kb.update(result, "STEAM")
 
-		assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.alphabet["E"])
+		assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.am["E"])
 	})
 }
 
@@ -37,4 +37,7 @@ func TestGenerateAlphabet(t *testing.T) {
 
 	assert.Equal(t, "A", amap["A"])
 	assert.Equal(t, "Z", amap["Z"])
+
+	_, ok := amap["Ä"]
+	assert.False(t, ok)
 }

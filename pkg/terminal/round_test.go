@@ -51,7 +51,7 @@ func TestAdd(t *testing.T) {
 
 	t.Run("adding more than 5 letters does not increment the counter nor adds another letter", func(t *testing.T) {
 		round := NewRound()
-		letters := []string{"A", "B", "C", "D", "E"}
+		letters := []string{"A", "B", "C", "D", "E", "F"}
 
 		for _, l := range letters {
 			round.add(l)
