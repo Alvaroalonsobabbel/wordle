@@ -17,6 +17,13 @@ func TestKeyboardUpdate(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf(greyBackground, "H"), kb.alphabet["H"])
 	assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.alphabet["E"])
 	assert.Equal(t, fmt.Sprintf(yellowBackground, "O"), kb.alphabet["O"])
+
+	t.Run("correct letters get permanently marked as greenn", func(t *testing.T) {
+		result := wordle.Result{wordle.Absent, wordle.Absent, wordle.Present, wordle.Absent, wordle.Absent}
+		kb.update(result, "STEAM")
+
+		assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.alphabet["E"])
+	})
 }
 
 func TestKeyboardString(t *testing.T) {
