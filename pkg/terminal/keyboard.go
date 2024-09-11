@@ -20,7 +20,9 @@ func (k *keyboard) update(res wordle.Result, word string) {
 	for i, v := range status {
 		switch res[i] {
 		case wordle.Present:
-			k.alphabet[v] = fmt.Sprintf(yellowBackground, v)
+			if k.alphabet[v] != fmt.Sprintf(greenBackground, v) {
+				k.alphabet[v] = fmt.Sprintf(yellowBackground, v)
+			}
 		case wordle.Correct:
 			k.alphabet[v] = fmt.Sprintf(greenBackground, v)
 		case wordle.Absent:
