@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +21,9 @@ const (
 	backspace = 127
 	ctrlC     = 3
 	esc       = 27
+
+	// Accepted characters regex.
+	okRegex = `^[A-Z\r\x7F]+$`
 
 	// Terminal formatting.
 	newLine          = "\n\r"
@@ -40,6 +44,7 @@ type renderer struct {
 	rounds   []*round
 
 	printer      io.Writer
+	regex        *regexp.Regexp
 	currentRound int
 	errorMsg     string
 }
@@ -50,6 +55,7 @@ func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
+		regex:    regexp.MustCompile(okRegex),
 	}
 }
 
@@ -59,6 +65,7 @@ func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
+		regex:    regexp.MustCompile(okRegex),
 	}
 }
 
@@ -106,6 +113,10 @@ func (r *renderer) render() {
 }
 
 func (r *renderer) enter(b byte) {
+	if !r.regex.MatchString(strings.ToUpper(string(b))) {
+		return
+	}
+
 	r.showKBFlash(b)
 	switch b {
 	case backspace:
@@ -182,9 +193,10 @@ func (r *renderer) showKBFlash(l byte) {
 	}
 
 	f := fmt.Sprintf(flash, char)
-	f, r.keyboard.am[char] = r.keyboard.am[char], f
+	temp := r.keyboard.am[char]
+	r.keyboard.am[char] = f
 	r.render()
-	f, r.keyboard.am[char] = r.keyboard.am[char], f
+	r.keyboard.am[char] = temp
 	time.Sleep(25 * time.Millisecond)
 	r.render()
 }

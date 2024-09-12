@@ -69,14 +69,6 @@ func TestAdd(t *testing.T) {
 
 		assert.Equal(t, "A", round.status[0])
 	})
-
-	t.Run("entering a non a-z character does not update the letter nor the counter", func(t *testing.T) {
-		round := NewRound()
-		round.add("ä")
-
-		assert.Equal(t, "_", round.status[0])
-		assert.Equal(t, 0, round.index)
-	})
 }
 
 func TestBackspace(t *testing.T) {

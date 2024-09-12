@@ -73,4 +73,12 @@ func TestEnter(t *testing.T) {
 		want := "\tA A A A A"
 		assert.Equal(t, want, terminal.rounds[0].string())
 	})
+
+	t.Run("not allowed letters are ignored", func(t *testing.T) {
+		terminal := NewTestTerminal(buffer, "CHORE")
+		terminal.enter(49) // 1
+
+		want := "\t_ _ _ _ _"
+		assert.Equal(t, want, terminal.rounds[0].string())
+	})
 }
