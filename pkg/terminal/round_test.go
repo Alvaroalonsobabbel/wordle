@@ -51,7 +51,7 @@ func TestAdd(t *testing.T) {
 
 	t.Run("adding more than 5 letters does not increment the counter nor adds another letter", func(t *testing.T) {
 		round := NewRound()
-		letters := []string{"A", "B", "C", "D", "E"}
+		letters := []string{"A", "B", "C", "D", "E", "F"}
 
 		for _, l := range letters {
 			round.add(l)
@@ -68,14 +68,6 @@ func TestAdd(t *testing.T) {
 		round.add("a")
 
 		assert.Equal(t, "A", round.status[0])
-	})
-
-	t.Run("entering a non a-z character does not update the letter nor the counter", func(t *testing.T) {
-		round := NewRound()
-		round.add("ä")
-
-		assert.Equal(t, "_", round.status[0])
-		assert.Equal(t, 0, round.index)
 	})
 }
 

@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"regexp"
 	"strings"
 )
 
@@ -9,14 +8,10 @@ type round struct {
 	index     int
 	status    []string
 	animation string
-	regex     *regexp.Regexp
 }
 
 func NewRound() *round { //nolint: revive
-	return &round{
-		status: strings.Split(strings.Repeat("_", 5), ""),
-		regex:  regexp.MustCompile(`^[A-Z]+$`),
-	}
+	return &round{status: strings.Split(strings.Repeat("_", 5), "")}
 }
 
 func NewRounds() []*round { //nolint: revive
@@ -35,7 +30,7 @@ func (r *round) string() string {
 func (r *round) add(s string) {
 	letter := strings.ToUpper(s)
 
-	if !r.regex.MatchString(letter) || r.index == 5 {
+	if r.index == 5 {
 		return
 	}
 

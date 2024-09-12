@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -21,6 +22,9 @@ const (
 	ctrlC     = 3
 	esc       = 27
 
+	// Accepted characters regex.
+	okRegex = `^[A-Z\r\x7F]+$`
+
 	// Terminal formatting.
 	newLine          = "\n\r"
 	clearScreen      = "\033[H\033[2J"
@@ -30,6 +34,7 @@ const (
 	greenBackground  = "\x1b[7m\x1b[32m%s\x1b[0m"
 	yellowBackground = "\x1b[7m\x1b[33m%s\x1b[0m"
 	greyBackground   = "\x1b[7m\x1b[90m%s\x1b[0m"
+	flash            = "\x1b[30m\x1b[47m%s\x1b[0m"
 	italics          = "\x1b[3m%s\x1b[0m"
 )
 
@@ -39,20 +44,19 @@ type renderer struct {
 	rounds   []*round
 
 	printer      io.Writer
+	regex        *regexp.Regexp
 	currentRound int
 	errorMsg     string
 }
 
 func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
-	r := &renderer{
+	return &renderer{
 		wordle:   wordle.NewGame(hardMode, offline),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
+		regex:    regexp.MustCompile(okRegex),
 	}
-	r.Render()
-
-	return r
 }
 
 func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
@@ -61,18 +65,19 @@ func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
+		regex:    regexp.MustCompile(okRegex),
 	}
 }
 
 func (r *renderer) Start() {
 	buf := make([]byte, 1)
-	r.Render()
+	r.render()
 
 	for {
 		ok, msg := r.wordle.Finish()
 		if ok {
 			r.errorMsg = fmt.Sprintf(italics, msg)
-			r.Render()
+			r.render()
 
 			return
 		}
@@ -91,7 +96,7 @@ func (r *renderer) Start() {
 	}
 }
 
-func (r *renderer) Render() {
+func (r *renderer) render() {
 	fmt.Fprint(r.printer, clearScreen)
 	fmt.Fprint(r.printer, title)
 	fmt.Fprint(r.printer, newLine)
@@ -108,6 +113,11 @@ func (r *renderer) Render() {
 }
 
 func (r *renderer) enter(b byte) {
+	if !r.regex.MatchString(strings.ToUpper(string(b))) {
+		return
+	}
+
+	r.showKBFlash(b)
 	switch b {
 	case backspace:
 		r.rounds[r.currentRound].backspace()
@@ -130,7 +140,7 @@ func (r *renderer) enter(b byte) {
 	default:
 		r.rounds[r.currentRound].add(string(b))
 	}
-	r.Render()
+	r.render()
 }
 
 func (r *renderer) showResult(res wordle.Result) {
@@ -144,7 +154,7 @@ func (r *renderer) showResult(res wordle.Result) {
 		}
 
 		r.rounds[r.currentRound].status[i] = "_"
-		r.Render()
+		r.render()
 		time.Sleep(150 * time.Millisecond)
 		r.rounds[r.currentRound].status[i] = fmt.Sprintf(color, v)
 	}
@@ -155,7 +165,7 @@ func (r *renderer) showError(err error) {
 		r.errorMsg = fmt.Sprintf(italics, err.Error())
 		defer func() {
 			r.errorMsg = ""
-			r.Render()
+			r.render()
 		}()
 
 		for i := range 6 {
@@ -164,9 +174,29 @@ func (r *renderer) showError(err error) {
 			} else {
 				r.rounds[r.currentRound].animation = ""
 			}
-			r.Render()
+			r.render()
 			time.Sleep(50 * time.Millisecond)
 		}
 		time.Sleep(1500 * time.Millisecond)
 	}()
+}
+
+func (r *renderer) showKBFlash(l byte) {
+	var char string
+	switch l {
+	case backspace:
+		char = "←"
+	case enter:
+		char = "↩︎"
+	default:
+		char = strings.ToUpper(string(l))
+	}
+
+	f := fmt.Sprintf(flash, char)
+	temp := r.keyboard.am[char]
+	r.keyboard.am[char] = f
+	r.render()
+	r.keyboard.am[char] = temp
+	time.Sleep(25 * time.Millisecond)
+	r.render()
 }
