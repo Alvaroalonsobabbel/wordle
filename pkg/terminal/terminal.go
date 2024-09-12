@@ -30,6 +30,7 @@ const (
 	greenBackground  = "\x1b[7m\x1b[32m%s\x1b[0m"
 	yellowBackground = "\x1b[7m\x1b[33m%s\x1b[0m"
 	greyBackground   = "\x1b[7m\x1b[90m%s\x1b[0m"
+	flash            = "\x1b[30m\x1b[47m%s\x1b[0m"
 	italics          = "\x1b[3m%s\x1b[0m"
 )
 
@@ -105,6 +106,7 @@ func (r *renderer) render() {
 }
 
 func (r *renderer) enter(b byte) {
+	r.showKBFlash(b)
 	switch b {
 	case backspace:
 		r.rounds[r.currentRound].backspace()
@@ -166,4 +168,23 @@ func (r *renderer) showError(err error) {
 		}
 		time.Sleep(1500 * time.Millisecond)
 	}()
+}
+
+func (r *renderer) showKBFlash(l byte) {
+	var char string
+	switch l {
+	case backspace:
+		char = "←"
+	case enter:
+		char = "↩︎"
+	default:
+		char = strings.ToUpper(string(l))
+	}
+
+	f := fmt.Sprintf(flash, char)
+	f, r.keyboard.am[char] = r.keyboard.am[char], f
+	r.render()
+	f, r.keyboard.am[char] = r.keyboard.am[char], f
+	time.Sleep(25 * time.Millisecond)
+	r.render()
 }
