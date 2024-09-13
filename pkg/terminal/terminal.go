@@ -127,39 +127,40 @@ func (r *renderer) enter(b byte) {
 		}
 
 		lastWord := strings.Join(r.rounds[r.wordle.Round].status, "")
-		result, err := r.wordle.Try(lastWord)
-		if err != nil {
+		if err := r.wordle.Try(lastWord); err != nil {
 			r.showError(err)
 			return
 		}
 
-		r.showResult(result)
-		r.keyboard.update(result, lastWord)
+		r.showResult()
+
+		// keyboard.update happens after wordle.Try increments the
+		// round counter. that's why we send the previous round's result.
+		r.keyboard.update(&r.wordle.Results[r.wordle.Round-1], lastWord)
 	default:
 		r.rounds[r.wordle.Round].add(string(b))
 	}
 	r.render()
 }
 
-func (r *renderer) showResult(res *wordle.Result) {
+func (r *renderer) showResult() {
 	// showResult happens after wordle.Try increments the round counter.
-	// that's why here the counter is momentarily reduced.
-	r.wordle.Round--
-	defer func() { r.wordle.Round++ }()
+	// that's why we use the round before here.
+	c := r.wordle.Round - 1
 
-	for i, v := range r.rounds[r.wordle.Round].status {
+	for i, v := range r.rounds[c].status {
 		color := black
-		switch (*res)[i] {
+		switch r.wordle.Results[c][i] {
 		case wordle.Correct:
 			color = green
 		case wordle.Present:
 			color = yellow
 		}
 
-		r.rounds[r.wordle.Round].status[i] = "_"
+		r.rounds[c].status[i] = "_"
 		r.render()
 		time.Sleep(150 * time.Millisecond)
-		r.rounds[r.wordle.Round].status[i] = fmt.Sprintf(color, v)
+		r.rounds[c].status[i] = fmt.Sprintf(color, v)
 	}
 }
 

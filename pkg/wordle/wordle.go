@@ -69,18 +69,19 @@ func NewTestWordle(hardMode bool, wordle string) *Game {
 	}
 }
 
-func (g *Game) Try(word string) (*Result, error) {
+func (g *Game) Try(word string) error {
 	if !slices.Contains(g.allowedWords, word) {
-		return nil, fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
+		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
 	if g.hardMode {
 		if err := g.hardModeCheck(word); err != nil {
-			return nil, err
+			return err
 		}
 	}
+	g.result(word)
 
-	return g.result(word), nil
+	return nil
 }
 
 func (g *Game) Finish() (bool, string) {
@@ -119,7 +120,7 @@ func (g *Game) hardModeCheck(word string) error {
 	return nil
 }
 
-func (g *Game) result(word string) *Result {
+func (g *Game) result(word string) {
 	var hints = make(map[string]int)
 	maps.Copy(hints, g.hintMap)
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
@@ -143,9 +144,7 @@ func (g *Game) result(word string) *Result {
 		}
 	}
 
-	defer func() { g.Round++ }()
-
-	return &g.Results[g.Round]
+	g.Round++
 }
 
 func pickRandomWord() string {
