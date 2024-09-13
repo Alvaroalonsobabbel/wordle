@@ -142,6 +142,7 @@ func (g *Game) result(word string) *Result {
 			}
 		}
 	}
+
 	defer func() { g.Round++ }()
 
 	return &g.Results[g.Round]

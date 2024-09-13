@@ -43,10 +43,9 @@ type renderer struct {
 	keyboard *keyboard
 	rounds   []*round
 
-	printer      io.Writer
-	regex        *regexp.Regexp
-	currentRound int
-	errorMsg     string
+	printer  io.Writer
+	regex    *regexp.Regexp
+	errorMsg string
 }
 
 func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
@@ -120,14 +119,14 @@ func (r *renderer) enter(b byte) {
 	r.showKBFlash(b)
 	switch b {
 	case backspace:
-		r.rounds[r.currentRound].backspace()
+		r.rounds[r.wordle.Round].backspace()
 	case enter:
-		if r.rounds[r.currentRound].index < 5 {
+		if r.rounds[r.wordle.Round].index < 5 {
 			r.showError(errors.New("Not enough letters")) //nolint: stylecheck
 			return
 		}
 
-		lastWord := strings.Join(r.rounds[r.currentRound].status, "")
+		lastWord := strings.Join(r.rounds[r.wordle.Round].status, "")
 		result, err := r.wordle.Try(lastWord)
 		if err != nil {
 			r.showError(err)
@@ -136,15 +135,19 @@ func (r *renderer) enter(b byte) {
 
 		r.showResult(result)
 		r.keyboard.update(result, lastWord)
-		r.currentRound++
 	default:
-		r.rounds[r.currentRound].add(string(b))
+		r.rounds[r.wordle.Round].add(string(b))
 	}
 	r.render()
 }
 
 func (r *renderer) showResult(res *wordle.Result) {
-	for i, v := range r.rounds[r.currentRound].status {
+	// showResult happens after wordle.Try increments the round counter.
+	// that's why here the counter is momentarily reduced.
+	r.wordle.Round--
+	defer func() { r.wordle.Round++ }()
+
+	for i, v := range r.rounds[r.wordle.Round].status {
 		color := black
 		switch (*res)[i] {
 		case wordle.Correct:
@@ -153,10 +156,10 @@ func (r *renderer) showResult(res *wordle.Result) {
 			color = yellow
 		}
 
-		r.rounds[r.currentRound].status[i] = "_"
+		r.rounds[r.wordle.Round].status[i] = "_"
 		r.render()
 		time.Sleep(150 * time.Millisecond)
-		r.rounds[r.currentRound].status[i] = fmt.Sprintf(color, v)
+		r.rounds[r.wordle.Round].status[i] = fmt.Sprintf(color, v)
 	}
 }
 
@@ -170,9 +173,9 @@ func (r *renderer) showError(err error) {
 
 		for i := range 6 {
 			if i%2 == 0 {
-				r.rounds[r.currentRound].animation = " "
+				r.rounds[r.wordle.Round].animation = " "
 			} else {
-				r.rounds[r.currentRound].animation = ""
+				r.rounds[r.wordle.Round].animation = ""
 			}
 			r.render()
 			time.Sleep(50 * time.Millisecond)
