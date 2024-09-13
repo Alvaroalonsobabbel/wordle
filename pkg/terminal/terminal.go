@@ -143,10 +143,10 @@ func (r *renderer) enter(b byte) {
 	r.render()
 }
 
-func (r *renderer) showResult(res wordle.Result) {
+func (r *renderer) showResult(res *wordle.Result) {
 	for i, v := range r.rounds[r.currentRound].status {
 		color := black
-		switch res[i] {
+		switch (*res)[i] {
 		case wordle.Correct:
 			color = green
 		case wordle.Present:

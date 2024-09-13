@@ -12,27 +12,27 @@ func TestTry(t *testing.T) {
 		tests := []struct {
 			word           string
 			inputWord      string
-			expectedColors Result
+			expectedStatus *Result
 		}{
 			{
-				"CLEAR", "CEDAR", Result{Correct, Present, Absent, Correct, Correct},
+				"CLEAR", "CEDAR", &Result{Correct, Present, Absent, Correct, Correct},
 			},
 			{
-				"CHARM", "BLAST", Result{Absent, Absent, Correct, Absent, Absent},
+				"CHARM", "BLAST", &Result{Absent, Absent, Correct, Absent, Absent},
 			},
 			{
-				"TIGHT", "FIGHT", Result{Absent, Correct, Correct, Correct, Correct},
+				"TIGHT", "FIGHT", &Result{Absent, Correct, Correct, Correct, Correct},
 			},
 			{
-				"CRACK", "OPIUM", Result{Absent, Absent, Absent, Absent, Absent},
+				"CRACK", "OPIUM", &Result{Absent, Absent, Absent, Absent, Absent},
 			},
 			{
-				"CHORE", "ROACH", Result{Present, Present, Absent, Present, Present},
+				"CHORE", "ROACH", &Result{Present, Present, Absent, Present, Present},
 			},
 			{
 				// Second to last L should be absent as one L has been provided and
 				// it was already been discovered.
-				"SPOIL", "QUILL", Result{Absent, Absent, Present, Absent, Correct},
+				"SPOIL", "QUILL", &Result{Absent, Absent, Present, Absent, Correct},
 			},
 		}
 
@@ -43,7 +43,7 @@ func TestTry(t *testing.T) {
 				assert.NoError(t, err)
 
 				for i := range len(test.word) {
-					assert.Equal(t, test.expectedColors[i], result[i], fmt.Sprintf("error in char %d", i))
+					assert.Equal(t, (*test.expectedStatus)[i], (*result)[i], fmt.Sprintf("error in char %d", i))
 				}
 			})
 		}
@@ -53,15 +53,15 @@ func TestTry(t *testing.T) {
 		wordle := NewTestWordle(false, "STILL")
 		result, err := wordle.Try("LOVER")
 		assert.NoError(t, err)
-		expectedResult := Result{Present, Absent, Absent, Absent, Absent}
+		expectedResult := &Result{Present, Absent, Absent, Absent, Absent}
 		assert.Equal(t, expectedResult, result)
 
 		result, _ = wordle.Try("ALLOW") //nolint: errcheck
-		expectedResult = Result{Absent, Present, Present, Absent, Absent}
+		expectedResult = &Result{Absent, Present, Present, Absent, Absent}
 		assert.Equal(t, expectedResult, result)
 
 		result, _ = wordle.Try("LEVEL") //nolint: errcheck
-		expectedResult = Result{Present, Absent, Absent, Absent, Correct}
+		expectedResult = &Result{Present, Absent, Absent, Absent, Correct}
 		assert.Equal(t, expectedResult, result)
 	})
 

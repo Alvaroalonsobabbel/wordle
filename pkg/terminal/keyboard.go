@@ -15,10 +15,10 @@ func NewKB() *keyboard { //nolint: revive
 	return &keyboard{am: newAlphabetMap()}
 }
 
-func (k *keyboard) update(res wordle.Result, word string) {
+func (k *keyboard) update(res *wordle.Result, word string) {
 	status := strings.Split(word, "")
 	for i, v := range status {
-		switch res[i] {
+		switch (*res)[i] {
 		case wordle.Present:
 			if k.am[v] != fmt.Sprintf(greenBackground, v) {
 				k.am[v] = fmt.Sprintf(yellowBackground, v)

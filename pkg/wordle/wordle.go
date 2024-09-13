@@ -36,7 +36,8 @@ type (
 	Status int
 	Result []Status
 	Game   struct {
-		Round int
+		Round   int
+		Results [6]Result
 
 		wordle       string
 		hardMode     bool
@@ -68,7 +69,7 @@ func NewTestWordle(hardMode bool, wordle string) *Game {
 	}
 }
 
-func (g *Game) Try(word string) (Result, error) {
+func (g *Game) Try(word string) (*Result, error) {
 	if !slices.Contains(g.allowedWords, word) {
 		return nil, fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
@@ -118,16 +119,14 @@ func (g *Game) hardModeCheck(word string) error {
 	return nil
 }
 
-func (g *Game) result(word string) Result {
-	var (
-		res   = Result{Absent, Absent, Absent, Absent, Absent}
-		hints = make(map[string]int)
-	)
+func (g *Game) result(word string) *Result {
+	var hints = make(map[string]int)
 	maps.Copy(hints, g.hintMap)
+	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
 	for i, v := range g.wordle {
 		if word[i] == byte(v) {
-			res[i] = Correct
+			g.Results[g.Round][i] = Correct
 			g.discovered[i] = string(word[i])
 			hints[string(v)]--
 		}
@@ -137,15 +136,15 @@ func (g *Game) result(word string) Result {
 		if strings.Contains(g.wordle, string(word[i])) {
 			g.hints = append(g.hints, string(word[i]))
 			hintCount := hints[string(word[i])]
-			if hintCount > 0 && res[i] != Correct {
-				res[i] = Present
+			if hintCount > 0 && g.Results[g.Round][i] != Correct {
+				g.Results[g.Round][i] = Present
 				hints[string(word[i])]--
 			}
 		}
 	}
-	g.Round++
+	defer func() { g.Round++ }()
 
-	return res
+	return &g.Results[g.Round]
 }
 
 func pickRandomWord() string {
