@@ -32,19 +32,20 @@ var (
 	ordinalNumbers = []string{"1st", "2nd", "3rd", "4th", "5th"}
 )
 
-type Status int
+type (
+	Status int
+	Result []Status
+	Game   struct {
+		Round int
 
-type Result []Status
-
-type Game struct {
-	wordle      string
-	hardMode    bool
-	guessesList []string
-	hints       []string
-	discovered  [5]string
-	roundCount  int
-	hintMap     map[string]int
-}
+		wordle       string
+		hardMode     bool
+		allowedWords []string
+		hints        []string
+		discovered   [5]string
+		hintMap      map[string]int
+	}
+)
 
 func NewGame(hardMode, offline bool) *Game {
 	var wordle string
@@ -55,25 +56,20 @@ func NewGame(hardMode, offline bool) *Game {
 		wordle = fetchTodaysWordle()
 	}
 
-	return &Game{
-		wordle:      wordle,
-		guessesList: generateWordsList(),
-		hardMode:    hardMode,
-		hintMap:     calculateMaxHints(wordle),
-	}
+	return NewTestWordle(hardMode, wordle)
 }
 
 func NewTestWordle(hardMode bool, wordle string) *Game {
 	return &Game{
-		wordle:      wordle,
-		guessesList: generateWordsList(),
-		hardMode:    hardMode,
-		hintMap:     calculateMaxHints(wordle),
+		wordle:       wordle,
+		allowedWords: generateAllowedWordsList(),
+		hardMode:     hardMode,
+		hintMap:      calculateMaxHints(wordle),
 	}
 }
 
 func (g *Game) Try(word string) (Result, error) {
-	if !slices.Contains(g.guessesList, word) {
+	if !slices.Contains(g.allowedWords, word) {
 		return nil, fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
@@ -89,7 +85,7 @@ func (g *Game) Try(word string) (Result, error) {
 func (g *Game) Finish() (bool, string) {
 	if strings.Join(g.discovered[:], "") == g.wordle {
 		var msg string
-		switch g.roundCount {
+		switch g.Round {
 		case 1:
 			msg = "Genius"
 		case 6:
@@ -99,7 +95,7 @@ func (g *Game) Finish() (bool, string) {
 		return true, msg
 	}
 
-	if g.roundCount > 5 {
+	if g.Round > 5 {
 		return true, g.wordle
 	}
 
@@ -147,7 +143,7 @@ func (g *Game) result(word string) Result {
 			}
 		}
 	}
-	g.roundCount++
+	g.Round++
 
 	return res
 }
@@ -187,7 +183,7 @@ func fetchTodaysWordle() string {
 	return strings.ToUpper(r.Solution)
 }
 
-func generateWordsList() []string {
+func generateAllowedWordsList() []string {
 	var (
 		allowed = strings.Split(strings.ToUpper(allowedList), "\n")
 		answers = strings.Split(strings.ToUpper(answersList), "\n")

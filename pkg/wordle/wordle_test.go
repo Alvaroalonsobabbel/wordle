@@ -78,9 +78,9 @@ func TestTry(t *testing.T) {
 	t.Run("hard mode: hints must be used", func(t *testing.T) {
 		testWord := "WORLD"
 		wordle := &Game{
-			hardMode:    true,
-			wordle:      testWord,
-			guessesList: generateWordsList(),
+			hardMode:     true,
+			wordle:       testWord,
+			allowedWords: generateAllowedWordsList(),
 		}
 
 		_, err := wordle.Try("DIARY")
@@ -100,9 +100,9 @@ func TestTry(t *testing.T) {
 	t.Run("hard mode: discovered words must be used in the correct place", func(t *testing.T) {
 		testWord := "WORLD"
 		wordle := &Game{
-			hardMode:    true,
-			wordle:      testWord,
-			guessesList: generateWordsList(),
+			hardMode:     true,
+			wordle:       testWord,
+			allowedWords: generateAllowedWordsList(),
 		}
 
 		_, err := wordle.Try("WEARY")
