@@ -18,7 +18,7 @@ func TestShareString(t *testing.T) {
 		got := share.string()
 		want := "Wordle 2/6*" + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) +
-			newLine + strings.Repeat(correctSquare, 5)
+			newLine + strings.Repeat(correctSquare, 5) + newLine
 
 		assert.Equal(t, want, got)
 	})
@@ -39,7 +39,7 @@ func TestShareString(t *testing.T) {
 			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
-			strings.Repeat(correctSquare, 5)
+			strings.Repeat(correctSquare, 5) + newLine
 
 		assert.Equal(t, want, got)
 	})

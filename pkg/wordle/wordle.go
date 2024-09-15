@@ -167,6 +167,7 @@ func fetchTodaysWordle() string {
 		url = wordleBaseURL + time.Now().Format("2006-01-02") + ".json"
 		r   = struct {
 			Solution string `json:"solution"`
+			Number   int    `json:"days_since_launch"`
 		}{}
 	)
 
