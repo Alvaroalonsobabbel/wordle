@@ -86,15 +86,9 @@ func (g *Game) Try(word string) error {
 
 func (g *Game) Finish() (bool, string) {
 	if strings.Join(g.discovered[:], "") == g.wordle {
-		var msg string
-		switch g.Round {
-		case 1:
-			msg = "Genius"
-		case 6:
-			msg = "Phew!"
-		}
+		msg := map[int]string{1: "Genius", 6: "Phew!"}
 
-		return true, msg
+		return true, msg[g.Round]
 	}
 
 	if g.Round > 5 {
