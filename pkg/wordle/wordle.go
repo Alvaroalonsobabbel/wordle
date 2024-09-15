@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"maps"
 	"math/rand/v2"
 	"net/http"
 	"slices"
@@ -44,7 +43,6 @@ type (
 		allowedWords []string
 		hints        []string
 		discovered   [5]string
-		hintMap      map[string]int
 	}
 )
 
@@ -63,9 +61,8 @@ func NewGame(hardMode, offline bool) *Game {
 func NewTestWordle(hardMode bool, wordle string) *Game {
 	return &Game{
 		wordle:       wordle,
-		allowedWords: generateAllowedWordsList(),
+		allowedWords: allowedWords(),
 		hardMode:     hardMode,
-		hintMap:      calculateMaxHints(wordle),
 	}
 }
 
@@ -115,8 +112,7 @@ func (g *Game) hardModeCheck(word string) error {
 }
 
 func (g *Game) result(word string) {
-	var hints = make(map[string]int)
-	maps.Copy(hints, g.hintMap)
+	hints := maxHints(g.wordle)
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
 	for i, v := range g.wordle {
@@ -130,8 +126,7 @@ func (g *Game) result(word string) {
 	for i := range g.wordle {
 		if strings.Contains(g.wordle, string(word[i])) {
 			g.hints = append(g.hints, string(word[i]))
-			hintCount := hints[string(word[i])]
-			if hintCount > 0 && g.Results[g.Round][i] != Correct {
+			if hints[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present
 				hints[string(word[i])]--
 			}
@@ -147,7 +142,7 @@ func pickRandomWord() string {
 	return strings.ToUpper(answers[rand.IntN(len(answers))]) //nolint: gosec
 }
 
-func calculateMaxHints(wordle string) map[string]int {
+func maxHints(wordle string) map[string]int {
 	hintMap := make(map[string]int)
 	for _, v := range wordle {
 		hintMap[string(v)]++
@@ -177,7 +172,7 @@ func fetchTodaysWordle() string {
 	return strings.ToUpper(r.Solution)
 }
 
-func generateAllowedWordsList() []string {
+func allowedWords() []string {
 	var (
 		allowed = strings.Split(strings.ToUpper(allowedList), "\n")
 		answers = strings.Split(strings.ToUpper(answersList), "\n")

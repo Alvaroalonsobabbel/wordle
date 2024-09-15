@@ -80,7 +80,7 @@ func TestTry(t *testing.T) {
 		wordle := &Game{
 			hardMode:     true,
 			wordle:       testWord,
-			allowedWords: generateAllowedWordsList(),
+			allowedWords: allowedWords(),
 		}
 
 		err := wordle.Try("DIARY")
@@ -102,7 +102,7 @@ func TestTry(t *testing.T) {
 		wordle := &Game{
 			hardMode:     true,
 			wordle:       testWord,
-			allowedWords: generateAllowedWordsList(),
+			allowedWords: allowedWords(),
 		}
 
 		err := wordle.Try("WEARY")
