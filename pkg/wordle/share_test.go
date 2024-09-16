@@ -13,7 +13,6 @@ func TestShareString(t *testing.T) {
 		wordle.Try("CELLO") //nolint: errcheck
 		wordle.Try("HELLO") //nolint: errcheck
 
-		// share := newShare(&Results)
 		got := wordle.Share()
 		want := "Wordle 2/6*" + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) +
@@ -30,7 +29,6 @@ func TestShareString(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		// share := newShare(&Results)
 		got := wordle.Share()
 		want := "Wordle 6/6*" + newLine +
 			strings.Repeat(absentSquare, 5) + newLine +
