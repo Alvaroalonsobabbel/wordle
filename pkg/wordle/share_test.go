@@ -9,7 +9,7 @@ import (
 
 func TestShareString(t *testing.T) {
 	t.Run("win in two tries", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 		wordle.Try("CELLO") //nolint: errcheck
 		wordle.Try("HELLO") //nolint: errcheck
 
@@ -22,7 +22,7 @@ func TestShareString(t *testing.T) {
 	})
 
 	t.Run("win in 6 tries", func(t *testing.T) {
-		wordle := NewTestWordle(false, "LIGHT")
+		wordle := NewGame(WithCustomWord("LIGHT"))
 		tries := []string{"SCARF", "MIGHT", "FIGHT", "TIGHT", "RIGHT", "LIGHT"}
 		for _, word := range tries {
 			err := wordle.Try(word)

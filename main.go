@@ -26,7 +26,7 @@ func main() {
 	restoreConsole := startRawConsole()
 	defer restoreConsole()
 
-	terminal.New(os.Stdout, hardMode, offline).Start()
+	terminal.New(os.Stdout, hardMode).Start()
 }
 
 func startRawConsole() func() {

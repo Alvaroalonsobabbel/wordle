@@ -38,7 +38,7 @@ func TestTry(t *testing.T) {
 
 		for _, test := range tests {
 			t.Run(test.word+test.inputWord, func(t *testing.T) {
-				wordle := NewTestWordle(false, test.word)
+				wordle := NewGame(WithCustomWord(test.word))
 				err := wordle.Try(test.inputWord)
 				assert.NoError(t, err)
 
@@ -50,7 +50,7 @@ func TestTry(t *testing.T) {
 	})
 
 	t.Run("consecutive hints", func(t *testing.T) {
-		wordle := NewTestWordle(false, "STILL")
+		wordle := NewGame(WithCustomWord("STILL"))
 		err := wordle.Try("LOVER")
 		assert.NoError(t, err)
 		expectedResult := Result{Present, Absent, Absent, Absent, Absent}
@@ -68,7 +68,7 @@ func TestTry(t *testing.T) {
 	t.Run("a word not in the list returns an error", func(t *testing.T) {
 		badWord := "AAAAA"
 		expectedError := fmt.Errorf("Not in word list: %s", badWord)
-		wordle := NewGame(false, true)
+		wordle := NewGame(WithCustomWord(badWord))
 
 		err := wordle.Try(badWord)
 		assert.Error(t, err)
@@ -76,13 +76,7 @@ func TestTry(t *testing.T) {
 	})
 
 	t.Run("hard mode: hints must be used", func(t *testing.T) {
-		testWord := "WORLD"
-		wordle := &Game{
-			hardMode:     true,
-			wordle:       testWord,
-			allowedWords: allowedWords(),
-		}
-
+		wordle := NewGame(WithCustomWord("WORLD"), WithHardMode(true))
 		err := wordle.Try("DIARY")
 		assert.NoError(t, err)
 
@@ -98,13 +92,7 @@ func TestTry(t *testing.T) {
 	})
 
 	t.Run("hard mode: discovered words must be used in the correct place", func(t *testing.T) {
-		testWord := "WORLD"
-		wordle := &Game{
-			hardMode:     true,
-			wordle:       testWord,
-			allowedWords: allowedWords(),
-		}
-
+		wordle := NewGame(WithCustomWord("WORLD"), WithHardMode(true))
 		err := wordle.Try("WEARY")
 		assert.NoError(t, err)
 
@@ -125,7 +113,7 @@ func TestTry(t *testing.T) {
 
 func TestFinish(t *testing.T) {
 	t.Run("finish returns false while game is running", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 		err := wordle.Try("WORLD")
 		assert.NoError(t, err)
 
@@ -135,7 +123,7 @@ func TestFinish(t *testing.T) {
 	})
 
 	t.Run("finish returns true if game ends due to win", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 		err := wordle.Try("WORLD")
 		assert.NoError(t, err)
 
@@ -152,7 +140,7 @@ func TestFinish(t *testing.T) {
 	})
 
 	t.Run("wining first try return 'Genius'", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 		err := wordle.Try("HELLO")
 		assert.NoError(t, err)
 
@@ -162,7 +150,7 @@ func TestFinish(t *testing.T) {
 	})
 
 	t.Run("wining last try return 'Phew!'", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 		for range 5 {
 			wordle.Try("WORLD") //nolint: errcheck
 		}
@@ -174,7 +162,7 @@ func TestFinish(t *testing.T) {
 	})
 
 	t.Run("finish returns true if game ends due to lose and err msg is current wordle", func(t *testing.T) {
-		wordle := NewTestWordle(false, "HELLO")
+		wordle := NewGame(WithCustomWord("HELLO"))
 
 		for range 6 {
 			wordle.Try("WORLD") //nolint: errcheck
@@ -184,8 +172,4 @@ func TestFinish(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "HELLO", msg)
 	})
-}
-
-func TestFetchTodaysWordle(t *testing.T) {
-	assert.Equal(t, 5, len(fetchTodaysWordle()))
 }

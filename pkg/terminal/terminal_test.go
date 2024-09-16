@@ -10,7 +10,7 @@ import (
 
 func TestRender(t *testing.T) {
 	var buffer bytes.Buffer
-	terminal := New(&buffer, false, false)
+	terminal := New(&buffer, false)
 
 	terminal.render()
 	result := buffer.String()
@@ -21,7 +21,7 @@ func TestRender(t *testing.T) {
 func TestEnter(t *testing.T) {
 	var buffer = io.Discard
 	t.Run("two letters on first round", func(t *testing.T) {
-		terminal := New(buffer, false, false)
+		terminal := New(buffer, false)
 
 		terminal.enter(97) // A
 		want := "\tA _ _ _ _"

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand/v2"
 	"net/http"
 	"slices"
 	"strings"
@@ -38,31 +37,23 @@ type (
 		Round   int
 		Results [6]Result
 
-		wordle       string
-		hardMode     bool
+		conf         *config
 		allowedWords []string
 		hints        []string
 		discovered   [5]string
 	}
 )
 
-func NewGame(hardMode, offline bool) *Game {
-	var wordle string
-	switch offline {
-	case true:
-		wordle = pickRandomWord()
-	case false:
-		wordle = fetchTodaysWordle()
+func NewGame(conf ...ConfigSetter) *Game {
+	config := &config{}
+
+	for _, confSetter := range conf {
+		confSetter(config)
 	}
 
-	return NewTestWordle(hardMode, wordle)
-}
-
-func NewTestWordle(hardMode bool, wordle string) *Game {
 	return &Game{
-		wordle:       wordle,
+		conf:         config,
 		allowedWords: allowedWords(),
-		hardMode:     hardMode,
 	}
 }
 
@@ -71,7 +62,7 @@ func (g *Game) Try(word string) error {
 		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
-	if g.hardMode {
+	if g.conf.hardMode {
 		if err := g.hardModeCheck(word); err != nil {
 			return err
 		}
@@ -82,14 +73,14 @@ func (g *Game) Try(word string) error {
 }
 
 func (g *Game) Finish() (bool, string) {
-	if strings.Join(g.discovered[:], "") == g.wordle {
+	if strings.Join(g.discovered[:], "") == g.conf.wordle {
 		msg := map[int]string{1: "Genius", 6: "Phew!"}
 
 		return true, msg[g.Round]
 	}
 
 	if g.Round > 5 {
-		return true, g.wordle
+		return true, g.conf.wordle
 	}
 
 	return false, ""
@@ -112,10 +103,10 @@ func (g *Game) hardModeCheck(word string) error {
 }
 
 func (g *Game) result(word string) {
-	hintCounter := maxHints(g.wordle)
+	hintCounter := maxHints(g.conf.wordle)
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
-	for i, v := range g.wordle {
+	for i, v := range g.conf.wordle {
 		if word[i] == byte(v) {
 			g.Results[g.Round][i] = Correct
 			g.discovered[i] = string(word[i])
@@ -123,8 +114,8 @@ func (g *Game) result(word string) {
 		}
 	}
 
-	for i := range g.wordle {
-		if strings.Contains(g.wordle, string(word[i])) {
+	for i := range g.conf.wordle {
+		if strings.Contains(g.conf.wordle, string(word[i])) {
 			g.hints = append(g.hints, string(word[i]))
 			if hintCounter[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present
@@ -136,12 +127,6 @@ func (g *Game) result(word string) {
 	g.Round++
 }
 
-func pickRandomWord() string {
-	answers := strings.Split(strings.ToUpper(answersList), "\n")
-
-	return strings.ToUpper(answers[rand.IntN(len(answers))]) //nolint: gosec
-}
-
 func maxHints(wordle string) map[string]int {
 	hintMap := make(map[string]int)
 	for _, v := range wordle {
@@ -151,7 +136,7 @@ func maxHints(wordle string) map[string]int {
 	return hintMap
 }
 
-func fetchTodaysWordle() string {
+func fetchTodaysWordle() (string, int) {
 	var (
 		url = wordleBaseURL + time.Now().Format("2006-01-02") + ".json"
 		r   = struct {
@@ -169,7 +154,7 @@ func fetchTodaysWordle() string {
 		log.Fatalf("unable to decode today's wordle json response: %v", err)
 	}
 
-	return strings.ToUpper(r.Solution)
+	return strings.ToUpper(r.Solution), r.Number
 }
 
 func allowedWords() []string {
