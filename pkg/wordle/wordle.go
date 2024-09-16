@@ -28,6 +28,7 @@ var (
 	answersList string
 
 	ordinalNumbers = []string{"1st", "2nd", "3rd", "4th", "5th"}
+	finishMessage  = map[int]string{1: "Genius", 6: "Phew!"}
 )
 
 type (
@@ -74,9 +75,7 @@ func (g *Game) Try(word string) error {
 
 func (g *Game) Finish() (bool, string) {
 	if strings.Join(g.discovered[:], "") == g.conf.wordle {
-		msg := map[int]string{1: "Genius", 6: "Phew!"}
-
-		return true, msg[g.Round]
+		return true, finishMessage[g.Round]
 	}
 
 	if g.Round > 5 {
@@ -136,7 +135,7 @@ func maxHints(wordle string) map[string]int {
 	return hintMap
 }
 
-func fetchTodaysWordle() (string, int) {
+func fetchTodaysWordle(c *http.Client) (string, int) {
 	var (
 		url = wordleBaseURL + time.Now().Format("2006-01-02") + ".json"
 		r   = struct {
@@ -145,7 +144,7 @@ func fetchTodaysWordle() (string, int) {
 		}{}
 	)
 
-	resp, err := http.Get(url) //nolint: gosec
+	resp, err := c.Get(url) //nolint: gosec
 	if err != nil {
 		log.Fatalf("unable to fetch today's wordle: %v", err)
 	}

@@ -1,5 +1,7 @@
 package wordle
 
+import "net/http"
+
 type ConfigSetter func(*config)
 
 type config struct {
@@ -16,7 +18,7 @@ func WithHardMode(h bool) ConfigSetter {
 
 func WithDalyWordle() ConfigSetter {
 	return func(c *config) {
-		c.wordle, c.wordleNumber = fetchTodaysWordle()
+		c.wordle, c.wordleNumber = fetchTodaysWordle(&http.Client{})
 	}
 }
 

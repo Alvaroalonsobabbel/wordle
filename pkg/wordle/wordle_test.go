@@ -1,7 +1,10 @@
 package wordle
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -172,4 +175,22 @@ func TestFinish(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "HELLO", msg)
 	})
+}
+
+type mockNYTAPI struct{}
+
+func (mockNYTAPI) RoundTrip(*http.Request) (*http.Response, error) {
+	body := `{"solution": "hello", "days_since_launch": 123}`
+	return &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       io.NopCloser(bytes.NewReader([]byte(body))),
+	}, nil
+}
+
+func TestFetchDailyWordle(t *testing.T) {
+	client := &http.Client{Transport: &mockNYTAPI{}}
+	word, day := fetchTodaysWordle(client)
+
+	assert.Equal(t, "HELLO", word)
+	assert.Equal(t, 123, day)
 }
