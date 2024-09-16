@@ -112,23 +112,23 @@ func (g *Game) hardModeCheck(word string) error {
 }
 
 func (g *Game) result(word string) {
-	hints := maxHints(g.wordle)
+	hintCounter := maxHints(g.wordle)
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
 	for i, v := range g.wordle {
 		if word[i] == byte(v) {
 			g.Results[g.Round][i] = Correct
 			g.discovered[i] = string(word[i])
-			hints[string(v)]--
+			hintCounter[string(v)]--
 		}
 	}
 
 	for i := range g.wordle {
 		if strings.Contains(g.wordle, string(word[i])) {
 			g.hints = append(g.hints, string(word[i]))
-			if hints[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
+			if hintCounter[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present
-				hints[string(word[i])]--
+				hintCounter[string(word[i])]--
 			}
 		}
 	}
