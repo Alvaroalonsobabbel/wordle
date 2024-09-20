@@ -2,6 +2,7 @@ package wordle
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -14,7 +15,13 @@ const (
 
 func (g *Game) Share() string {
 	squares := g.generateEmojiString()
-	title := fmt.Sprintf("Wordle %d/6*", g.Round)
+
+	n := strconv.Itoa(g.Round)
+	if strings.Join(g.discovered[:], "") != g.conf.wordle {
+		n = "X"
+	}
+
+	title := fmt.Sprintf("Wordle %d %s/6*", g.conf.wordleNumber, n)
 
 	return title + newLine + squares + newLine
 }

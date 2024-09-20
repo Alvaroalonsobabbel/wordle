@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -14,13 +12,18 @@ import (
 )
 
 const (
-	title = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
+	title    = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
+	postGame = "(s)hare (e)xit"
 
 	// Byte relevant characters.
 	enter     = 13
 	backspace = 127
 	ctrlC     = 3
 	esc       = 27
+	e         = 69
+	E         = 101
+	s         = 115
+	S         = 83
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z\r\x7F]+$`
@@ -46,6 +49,8 @@ type renderer struct {
 	printer  io.Writer
 	regex    *regexp.Regexp
 	errorMsg string
+
+	reader *reader
 }
 
 func New(w io.Writer, hardMode bool) *renderer { //nolint: revive
@@ -55,6 +60,7 @@ func New(w io.Writer, hardMode bool) *renderer { //nolint: revive
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
+		reader:   newReader(),
 	}
 }
 
@@ -65,11 +71,11 @@ func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
+		reader:   newReader(),
 	}
 }
 
 func (r *renderer) Start() {
-	buf := make([]byte, 1)
 	r.render()
 
 	for {
@@ -77,21 +83,30 @@ func (r *renderer) Start() {
 		if ok {
 			r.errorMsg = fmt.Sprintf(italics, msg)
 			r.render()
+			fmt.Fprint(r.printer, newLine+postGame)
+			r.postGame()
 
 			return
 		}
 
-		_, err := os.Stdin.Read(buf)
-		if err != nil {
-			log.Fatalf("Error reading input: %v", err)
-		}
+		r.reader.read()
+		r.enter(r.reader.buf[0])
+	}
+}
 
-		// Ctrl-C or Esc exits the game
-		if buf[0] == ctrlC || buf[0] == esc {
+func (r *renderer) postGame() {
+	for {
+		r.reader.read()
+
+		switch r.reader.buf[0] {
+		case s, S:
+			r.render()
+			fmt.Fprint(r.printer, newLine+r.wordle.Share())
+			fmt.Fprint(r.printer, newLine+postGame)
+		case e, E:
+			fmt.Fprint(r.printer, newLine)
 			return
 		}
-
-		r.enter(buf[0])
 	}
 }
 
