@@ -6,5 +6,8 @@ test:
 lint:
 	@golangci-lint run
 
-build:
+build: mod
 	@go build -o wordle
+
+mod:
+	@go mod download

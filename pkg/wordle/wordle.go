@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"maps"
-	"math/rand/v2"
 	"net/http"
 	"slices"
 	"strings"
@@ -30,77 +28,58 @@ var (
 	answersList string
 
 	ordinalNumbers = []string{"1st", "2nd", "3rd", "4th", "5th"}
+	finishMessage  = map[int]string{1: "Genius", 6: "Phew!"}
 )
 
-type Status int
+type (
+	Status int
+	Result []Status
+	Game   struct {
+		Round   int
+		Results [6]Result
 
-type Result []Status
+		conf         *config
+		allowedWords []string
+		hints        []string
+		discovered   [5]string
+	}
+)
 
-type Game struct {
-	wordle      string
-	hardMode    bool
-	guessesList []string
-	hints       []string
-	discovered  [5]string
-	roundCount  int
-	hintMap     map[string]int
-}
+func NewGame(conf ...ConfigSetter) *Game {
+	config := &config{}
 
-func NewGame(hardMode, offline bool) *Game {
-	var wordle string
-	switch offline {
-	case true:
-		wordle = pickRandomWord()
-	case false:
-		wordle = fetchTodaysWordle()
+	for _, confSetter := range conf {
+		confSetter(config)
 	}
 
 	return &Game{
-		wordle:      wordle,
-		guessesList: generateWordsList(),
-		hardMode:    hardMode,
-		hintMap:     calculateMaxHints(wordle),
+		conf:         config,
+		allowedWords: allowedWords(),
 	}
 }
 
-func NewTestWordle(hardMode bool, wordle string) *Game {
-	return &Game{
-		wordle:      wordle,
-		guessesList: generateWordsList(),
-		hardMode:    hardMode,
-		hintMap:     calculateMaxHints(wordle),
-	}
-}
-
-func (g *Game) Try(word string) (Result, error) {
-	if !slices.Contains(g.guessesList, word) {
-		return nil, fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
+func (g *Game) Try(word string) error {
+	if !slices.Contains(g.allowedWords, word) {
+		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
-	if g.hardMode {
+	if g.conf.hardMode {
 		if err := g.hardModeCheck(word); err != nil {
-			return nil, err
+			return err
 		}
 	}
+	g.result(word)
 
-	return g.result(word), nil
+	return nil
 }
 
 func (g *Game) Finish() (bool, string) {
-	if strings.Join(g.discovered[:], "") == g.wordle {
-		var msg string
-		switch g.roundCount {
-		case 1:
-			msg = "Genius"
-		case 6:
-			msg = "Phew!"
-		}
-
-		return true, msg
+	if strings.Join(g.discovered[:], "") == g.conf.wordle {
+		return true, finishMessage[g.Round]
 	}
 
-	if g.roundCount > 5 {
-		return true, g.wordle
+	if g.Round > 5 {
+		return true, g.conf.wordle
 	}
 
 	return false, ""
@@ -122,43 +101,32 @@ func (g *Game) hardModeCheck(word string) error {
 	return nil
 }
 
-func (g *Game) result(word string) Result {
-	var (
-		res   = Result{Absent, Absent, Absent, Absent, Absent}
-		hints = make(map[string]int)
-	)
-	maps.Copy(hints, g.hintMap)
+func (g *Game) result(word string) {
+	hintCounter := maxHints(g.conf.wordle)
+	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
-	for i, v := range g.wordle {
+	for i, v := range g.conf.wordle {
 		if word[i] == byte(v) {
-			res[i] = Correct
+			g.Results[g.Round][i] = Correct
 			g.discovered[i] = string(word[i])
-			hints[string(v)]--
+			hintCounter[string(v)]--
 		}
 	}
 
-	for i := range g.wordle {
-		if strings.Contains(g.wordle, string(word[i])) {
+	for i := range g.conf.wordle {
+		if strings.Contains(g.conf.wordle, string(word[i])) {
 			g.hints = append(g.hints, string(word[i]))
-			hintCount := hints[string(word[i])]
-			if hintCount > 0 && res[i] != Correct {
-				res[i] = Present
-				hints[string(word[i])]--
+			if hintCounter[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
+				g.Results[g.Round][i] = Present
+				hintCounter[string(word[i])]--
 			}
 		}
 	}
-	g.roundCount++
 
-	return res
+	g.Round++
 }
 
-func pickRandomWord() string {
-	answers := strings.Split(strings.ToUpper(answersList), "\n")
-
-	return strings.ToUpper(answers[rand.IntN(len(answers))]) //nolint: gosec
-}
-
-func calculateMaxHints(wordle string) map[string]int {
+func maxHints(wordle string) map[string]int {
 	hintMap := make(map[string]int)
 	for _, v := range wordle {
 		hintMap[string(v)]++
@@ -167,15 +135,16 @@ func calculateMaxHints(wordle string) map[string]int {
 	return hintMap
 }
 
-func fetchTodaysWordle() string {
+func fetchTodaysWordle(c *http.Client) (string, int) {
 	var (
 		url = wordleBaseURL + time.Now().Format("2006-01-02") + ".json"
 		r   = struct {
 			Solution string `json:"solution"`
+			Number   int    `json:"days_since_launch"`
 		}{}
 	)
 
-	resp, err := http.Get(url) //nolint: gosec
+	resp, err := c.Get(url) //nolint: gosec
 	if err != nil {
 		log.Fatalf("unable to fetch today's wordle: %v", err)
 	}
@@ -184,10 +153,10 @@ func fetchTodaysWordle() string {
 		log.Fatalf("unable to decode today's wordle json response: %v", err)
 	}
 
-	return strings.ToUpper(r.Solution)
+	return strings.ToUpper(r.Solution), r.Number
 }
 
-func generateWordsList() []string {
+func allowedWords() []string {
 	var (
 		allowed = strings.Split(strings.ToUpper(allowedList), "\n")
 		answers = strings.Split(strings.ToUpper(answersList), "\n")

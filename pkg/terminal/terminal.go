@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
-	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -14,13 +12,18 @@ import (
 )
 
 const (
-	title = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
+	title    = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
+	postGame = "(s)hare (e)xit"
 
 	// Byte relevant characters.
 	enter     = 13
 	backspace = 127
 	ctrlC     = 3
 	esc       = 27
+	e         = 69
+	E         = 101
+	s         = 115
+	S         = 83
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z\r\x7F]+$`
@@ -43,34 +46,36 @@ type renderer struct {
 	keyboard *keyboard
 	rounds   []*round
 
-	printer      io.Writer
-	regex        *regexp.Regexp
-	currentRound int
-	errorMsg     string
+	printer  io.Writer
+	regex    *regexp.Regexp
+	errorMsg string
+
+	reader *reader
 }
 
-func New(w io.Writer, hardMode, offline bool) *renderer { //nolint: revive
+func New(w io.Writer, hardMode bool) *renderer { //nolint: revive
 	return &renderer{
-		wordle:   wordle.NewGame(hardMode, offline),
+		wordle:   wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode)),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
+		reader:   newReader(),
 	}
 }
 
 func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 	return &renderer{
-		wordle:   wordle.NewTestWordle(false, word),
+		wordle:   wordle.NewGame(wordle.WithCustomWord(word)),
 		keyboard: NewKB(),
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
+		reader:   newReader(),
 	}
 }
 
 func (r *renderer) Start() {
-	buf := make([]byte, 1)
 	r.render()
 
 	for {
@@ -78,21 +83,30 @@ func (r *renderer) Start() {
 		if ok {
 			r.errorMsg = fmt.Sprintf(italics, msg)
 			r.render()
+			fmt.Fprint(r.printer, newLine+postGame)
+			r.postGame()
 
 			return
 		}
 
-		_, err := os.Stdin.Read(buf)
-		if err != nil {
-			log.Fatalf("Error reading input: %v", err)
-		}
+		r.reader.read()
+		r.enter(r.reader.buf[0])
+	}
+}
 
-		// Ctrl-C or Esc exits the game
-		if buf[0] == ctrlC || buf[0] == esc {
+func (r *renderer) postGame() {
+	for {
+		r.reader.read()
+
+		switch r.reader.buf[0] {
+		case s, S:
+			r.render()
+			fmt.Fprint(r.printer, newLine+r.wordle.Share())
+			fmt.Fprint(r.printer, newLine+postGame)
+		case e, E:
+			fmt.Fprint(r.printer, newLine)
 			return
 		}
-
-		r.enter(buf[0])
 	}
 }
 
@@ -120,43 +134,48 @@ func (r *renderer) enter(b byte) {
 	r.showKBFlash(b)
 	switch b {
 	case backspace:
-		r.rounds[r.currentRound].backspace()
+		r.rounds[r.wordle.Round].backspace()
 	case enter:
-		if r.rounds[r.currentRound].index < 5 {
+		if r.rounds[r.wordle.Round].index < 5 {
 			r.showError(errors.New("Not enough letters")) //nolint: stylecheck
 			return
 		}
 
-		lastWord := strings.Join(r.rounds[r.currentRound].status, "")
-		result, err := r.wordle.Try(lastWord)
-		if err != nil {
+		lastWord := strings.Join(r.rounds[r.wordle.Round].status, "")
+		if err := r.wordle.Try(lastWord); err != nil {
 			r.showError(err)
 			return
 		}
 
-		r.showResult(result)
-		r.keyboard.update(result, lastWord)
-		r.currentRound++
+		r.showResult()
+
+		// keyboard.update happens after wordle.Try increments the
+		// round counter. that's why we send the previous round's result.
+		r.keyboard.update(&r.wordle.Results[r.wordle.Round-1], lastWord)
 	default:
-		r.rounds[r.currentRound].add(string(b))
+		r.rounds[r.wordle.Round].add(string(b))
 	}
 	r.render()
 }
 
-func (r *renderer) showResult(res wordle.Result) {
-	for i, v := range r.rounds[r.currentRound].status {
+func (r *renderer) showResult() {
+	// showResult happens after wordle.Try increments the round counter.
+	// that's why we use the round before here.
+	c := r.wordle.Round - 1
+
+	for i, v := range r.rounds[c].status {
 		color := black
-		switch res[i] {
+		switch r.wordle.Results[c][i] {
 		case wordle.Correct:
 			color = green
 		case wordle.Present:
 			color = yellow
 		}
 
-		r.rounds[r.currentRound].status[i] = "_"
+		r.rounds[c].status[i] = "_"
 		r.render()
 		time.Sleep(150 * time.Millisecond)
-		r.rounds[r.currentRound].status[i] = fmt.Sprintf(color, v)
+		r.rounds[c].status[i] = fmt.Sprintf(color, v)
 	}
 }
 
@@ -170,9 +189,9 @@ func (r *renderer) showError(err error) {
 
 		for i := range 6 {
 			if i%2 == 0 {
-				r.rounds[r.currentRound].animation = " "
+				r.rounds[r.wordle.Round].animation = " "
 			} else {
-				r.rounds[r.currentRound].animation = ""
+				r.rounds[r.wordle.Round].animation = ""
 			}
 			r.render()
 			time.Sleep(50 * time.Millisecond)

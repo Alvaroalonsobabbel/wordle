@@ -3,7 +3,7 @@
 
 Play the NYT daily Wordle from the comfort of your terminal!
 
-<img src="doc/example.gif" alt="drawing" width="300"/>
+<img src="doc/example.gif" alt="drawing" width="282"/>
 
 ⚠️ this assumes you know how to use the terminal! If you don't you can find out how [here](https://www.google.com/search?q=how+to+use+the+terminal).
 
@@ -27,8 +27,7 @@ curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/i
 1. [Install Go](https://go.dev/doc/install)
 2. Clone the repo `git clone git@github.com:Alvaroalonsobabbel/wordle.git`
 3. CD into the repo `cd wordle`
-4. Download dependencies using `go mod download`
-5. Build the binary `make build`
+4. Build the binary `make build`
 
 ## How to Play
 
@@ -45,8 +44,3 @@ You can quit the game at any time by pressing `Esc` or `Ctrl C`
 
 Enables Worlde's hard mode.
 `wordle -hard`
-
-### Offline Mode
-
-Picks a random word from the answers collection instead of the daily Wordle.
-`wordle -offline`

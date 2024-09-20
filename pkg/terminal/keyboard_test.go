@@ -9,7 +9,7 @@ import (
 )
 
 func TestKeyboardUpdate(t *testing.T) {
-	result := wordle.Result{wordle.Absent, wordle.Correct, wordle.Correct, wordle.Absent, wordle.Present}
+	result := &wordle.Result{wordle.Absent, wordle.Correct, wordle.Correct, wordle.Absent, wordle.Present}
 
 	kb := NewKB()
 	kb.update(result, "HELLO")
@@ -19,7 +19,7 @@ func TestKeyboardUpdate(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf(yellowBackground, "O"), kb.am["O"])
 
 	t.Run("correct letters get permanently marked as greenn", func(t *testing.T) {
-		result := wordle.Result{wordle.Absent, wordle.Absent, wordle.Present, wordle.Absent, wordle.Absent}
+		result := &wordle.Result{wordle.Absent, wordle.Absent, wordle.Present, wordle.Absent, wordle.Absent}
 		kb.update(result, "STEAM")
 
 		assert.Equal(t, fmt.Sprintf(greenBackground, "E"), kb.am["E"])
