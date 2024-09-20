@@ -45,8 +45,3 @@ You can quit the game at any time by pressing `Esc` or `Ctrl C`
 
 Enables Worlde's hard mode.
 `wordle -hard`
-
-### Offline Mode
-
-Picks a random word from the answers collection instead of the daily Wordle.
-`wordle -offline`
