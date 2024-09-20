@@ -14,7 +14,7 @@ func TestShareString(t *testing.T) {
 		wordle.Try("HELLO") //nolint: errcheck
 
 		got := wordle.Share()
-		want := "Wordle 2/6*" + newLine +
+		want := "Wordle 0 2/6*" + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) +
 			newLine + strings.Repeat(correctSquare, 5) + newLine
 
@@ -30,13 +30,24 @@ func TestShareString(t *testing.T) {
 		}
 
 		got := wordle.Share()
-		want := "Wordle 6/6*" + newLine +
+		want := "Wordle 0 6/6*" + newLine +
 			strings.Repeat(absentSquare, 5) + newLine +
-			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
-			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
-			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
-			absentSquare + strings.Repeat(correctSquare, 4) + newLine +
+			strings.Repeat(absentSquare+strings.Repeat(correctSquare, 4)+newLine, 4) +
 			strings.Repeat(correctSquare, 5) + newLine
+
+		assert.Equal(t, want, got)
+	})
+
+	t.Run("lose", func(t *testing.T) {
+		wordle := NewGame(WithCustomWord("LIGHT"))
+		word := "SCARF"
+		for range 6 {
+			err := wordle.Try(word)
+			assert.NoError(t, err)
+		}
+
+		got := wordle.Share()
+		want := "Wordle 0 X/6*" + newLine + strings.Repeat(strings.Repeat(absentSquare, 5)+newLine, 6)
 
 		assert.Equal(t, want, got)
 	})
