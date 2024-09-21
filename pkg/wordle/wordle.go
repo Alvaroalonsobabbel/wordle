@@ -117,16 +117,16 @@ func (g *Game) result(word string) {
 		if rune(word[i]) == v {
 			g.Results[g.Round][i] = Correct
 			g.discovered[i] = rune(word[i])
-			hintCounter[string(v)]--
+			hintCounter[v]--
 		}
 	}
 
 	for i := range g.conf.wordle {
 		if strings.Contains(g.conf.wordle, string(word[i])) {
 			g.hints = append(g.hints, rune(word[i]))
-			if hintCounter[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
+			if hintCounter[rune(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present
-				hintCounter[string(word[i])]--
+				hintCounter[rune(word[i])]--
 			}
 		}
 	}
@@ -134,10 +134,10 @@ func (g *Game) result(word string) {
 	g.Round++
 }
 
-func maxHints(wordle string) map[string]int {
-	hintMap := make(map[string]int)
+func maxHints(wordle string) map[rune]int {
+	hintMap := make(map[rune]int)
 	for _, v := range wordle {
-		hintMap[string(v)]++
+		hintMap[v]++
 	}
 
 	return hintMap
@@ -165,10 +165,8 @@ func fetchTodaysWordle(c *http.Client) (string, int) {
 }
 
 func allowedWords() []string {
-	var (
-		allowed = strings.Split(strings.ToUpper(allowedList), "\n")
-		answers = strings.Split(strings.ToUpper(answersList), "\n")
+	return slices.Concat(
+		strings.Split(strings.ToUpper(allowedList), "\n"),
+		strings.Split(strings.ToUpper(answersList), "\n"),
 	)
-
-	return slices.Concat(allowed, answers)
 }
