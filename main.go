@@ -15,9 +15,7 @@ const (
 	showCursor = "\033[?25h"
 )
 
-var (
-	hardMode bool
-)
+var hardMode bool
 
 func main() {
 	evalOptions()
