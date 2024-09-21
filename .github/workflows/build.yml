@@ -35,7 +35,7 @@ jobs:
       - name: Read Version
         id: read_version
         run: |
-          VERSION=$(cat VERSION)
+          VERSION=$(./wordle -version)
           echo "Version: $VERSION"
           echo "::set-output name=version::$VERSION"
 

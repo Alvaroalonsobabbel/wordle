@@ -40,7 +40,12 @@ You can quit the game at any time by pressing `Esc` or `Ctrl C`
 
 ## Options
 
-### Hard Mode
-
 Enables Worlde's hard mode.
-`wordle -hard`
+```
+wordle -hard
+```
+
+Prints current version
+```
+wordle -version
+```
