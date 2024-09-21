@@ -13,6 +13,8 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
+const VERSION = "v0.1.1"
+
 const (
 	title    = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
 	postGame = "(s)hare (e)xit"

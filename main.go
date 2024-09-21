@@ -43,7 +43,15 @@ func startRawConsole() func() {
 
 func evalOptions() {
 	flag.BoolVar(&hardMode, "hard", false, "Sets the Game to Hard Mode")
+	flag.BoolFunc("version", "Prints version", version)
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func version(string) error {
+	fmt.Println(terminal.VERSION)
+	os.Exit(0)
+
+	return nil
 }
