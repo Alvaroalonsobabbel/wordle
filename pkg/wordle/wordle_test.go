@@ -137,9 +137,8 @@ func TestFinish(t *testing.T) {
 		err = wordle.Try("HELLO")
 		assert.NoError(t, err)
 
-		ok, msg = wordle.Finish()
+		ok, _ = wordle.Finish()
 		assert.True(t, ok)
-		assert.Empty(t, msg)
 	})
 
 	t.Run("wining first try return 'Genius'", func(t *testing.T) {

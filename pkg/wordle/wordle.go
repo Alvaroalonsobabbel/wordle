@@ -28,20 +28,28 @@ var (
 	answersList string
 
 	ordinalNumbers = []string{"1st", "2nd", "3rd", "4th", "5th"}
-	finishMessage  = map[int]string{1: "Genius", 6: "Phew!"}
+	finishMessage  = map[int]string{
+		1: "Genius",
+		2: "Magnificent",
+		3: "Impressive",
+		4: "Splendid",
+		5: "Great",
+		6: "Phew!",
+	}
 )
 
 type (
 	Status int
 	Result []Status
-	Game   struct {
+
+	Game struct {
 		Round   int
 		Results [6]Result
 
 		conf         *config
 		allowedWords []string
-		hints        []string
-		discovered   [5]string
+		hints        []rune
+		discovered   [5]rune
 	}
 )
 
@@ -74,7 +82,7 @@ func (g *Game) Try(word string) error {
 }
 
 func (g *Game) Finish() (bool, string) {
-	if strings.Join(g.discovered[:], "") == g.conf.wordle {
+	if string(g.discovered[:]) == g.conf.wordle {
 		return true, finishMessage[g.Round]
 	}
 
@@ -87,14 +95,14 @@ func (g *Game) Finish() (bool, string) {
 
 func (g *Game) hardModeCheck(word string) error {
 	for i, v := range g.discovered {
-		if v != "" && v != string(word[i]) {
-			return fmt.Errorf("%s letter must be %s", ordinalNumbers[i], v)
+		if v != 0 && v != rune(word[i]) {
+			return fmt.Errorf("%s letter must be %c", ordinalNumbers[i], v)
 		}
 	}
 
 	for _, v := range g.hints {
-		if !strings.Contains(word, v) {
-			return fmt.Errorf("Guess must contain %s", v) //nolint: stylecheck
+		if !strings.Contains(word, string(v)) {
+			return fmt.Errorf("Guess must contain %c", v) //nolint: stylecheck
 		}
 	}
 
@@ -106,16 +114,16 @@ func (g *Game) result(word string) {
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
 	for i, v := range g.conf.wordle {
-		if word[i] == byte(v) {
+		if rune(word[i]) == v {
 			g.Results[g.Round][i] = Correct
-			g.discovered[i] = string(word[i])
+			g.discovered[i] = rune(word[i])
 			hintCounter[string(v)]--
 		}
 	}
 
 	for i := range g.conf.wordle {
 		if strings.Contains(g.conf.wordle, string(word[i])) {
-			g.hints = append(g.hints, string(word[i]))
+			g.hints = append(g.hints, rune(word[i]))
 			if hintCounter[string(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present
 				hintCounter[string(word[i])]--

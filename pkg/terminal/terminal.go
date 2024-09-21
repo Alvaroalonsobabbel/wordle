@@ -15,15 +15,11 @@ const (
 	title    = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
 	postGame = "(s)hare (e)xit"
 
-	// Byte relevant characters.
+	// Relevant unicode characters.
 	enter     = 13
 	backspace = 127
 	ctrlC     = 3
 	esc       = 27
-	e         = 69
-	E         = 101
-	s         = 115
-	S         = 83
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z\r\x7F]+$`
@@ -99,11 +95,11 @@ func (r *renderer) postGame() {
 		r.reader.read()
 
 		switch r.reader.buf[0] {
-		case s, S:
+		case 's', 'S':
 			r.render()
 			fmt.Fprint(r.printer, newLine+r.wordle.Share())
 			fmt.Fprint(r.printer, newLine+postGame)
-		case e, E:
+		case 'e', 'E':
 			fmt.Fprint(r.printer, newLine)
 			return
 		}

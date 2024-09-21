@@ -14,19 +14,17 @@ const (
 )
 
 func (g *Game) Share() string {
-	squares := g.generateEmojiString()
-
 	n := strconv.Itoa(g.Round)
-	if strings.Join(g.discovered[:], "") != g.conf.wordle {
+	if string(g.discovered[:]) != g.conf.wordle {
 		n = "X"
 	}
 
 	title := fmt.Sprintf("Wordle %d %s/6*", g.conf.wordleNumber, n)
 
-	return title + newLine + squares + newLine
+	return title + newLine + g.squaresString()
 }
 
-func (g *Game) generateEmojiString() string {
+func (g *Game) squaresString() string {
 	var finalResult []string
 
 	for _, res := range g.Results {
