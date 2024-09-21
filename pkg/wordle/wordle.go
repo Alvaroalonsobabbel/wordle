@@ -46,24 +46,24 @@ type (
 		Round   int
 		Results [6]Result
 
-		conf         *config
 		allowedWords []string
 		hints        []rune
 		discovered   [5]rune
+		wordle       string
+		wordleNumber int
+		hardMode     bool
 	}
 )
 
 func NewGame(conf ...ConfigSetter) *Game {
-	config := &config{}
+	game := &Game{}
+	game.allowedWords = allowedWords()
 
 	for _, confSetter := range conf {
-		confSetter(config)
+		confSetter(game)
 	}
 
-	return &Game{
-		conf:         config,
-		allowedWords: allowedWords(),
-	}
+	return game
 }
 
 func (g *Game) Try(word string) error {
@@ -71,7 +71,7 @@ func (g *Game) Try(word string) error {
 		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
-	if g.conf.hardMode {
+	if g.hardMode {
 		if err := g.hardModeCheck(word); err != nil {
 			return err
 		}
@@ -82,12 +82,12 @@ func (g *Game) Try(word string) error {
 }
 
 func (g *Game) Finish() (bool, string) {
-	if string(g.discovered[:]) == g.conf.wordle {
+	if string(g.discovered[:]) == g.wordle {
 		return true, finishMessage[g.Round]
 	}
 
 	if g.Round > 5 {
-		return true, g.conf.wordle
+		return true, g.wordle
 	}
 
 	return false, ""
@@ -110,10 +110,10 @@ func (g *Game) hardModeCheck(word string) error {
 }
 
 func (g *Game) result(word string) {
-	hintCounter := maxHints(g.conf.wordle)
+	hintCounter := maxHints(g.wordle)
 	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
 
-	for i, v := range g.conf.wordle {
+	for i, v := range g.wordle {
 		if rune(word[i]) == v {
 			g.Results[g.Round][i] = Correct
 			g.discovered[i] = rune(word[i])
@@ -121,8 +121,8 @@ func (g *Game) result(word string) {
 		}
 	}
 
-	for i := range g.conf.wordle {
-		if strings.Contains(g.conf.wordle, string(word[i])) {
+	for i := range g.wordle {
+		if strings.Contains(g.wordle, string(word[i])) {
 			g.hints = append(g.hints, rune(word[i]))
 			if hintCounter[rune(word[i])] > 0 && g.Results[g.Round][i] != Correct {
 				g.Results[g.Round][i] = Present

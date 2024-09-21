@@ -15,11 +15,11 @@ const (
 
 func (g *Game) Share() string {
 	n := strconv.Itoa(g.Round)
-	if string(g.discovered[:]) != g.conf.wordle {
+	if string(g.discovered[:]) != g.wordle {
 		n = "X"
 	}
 
-	title := fmt.Sprintf("Wordle %d %s/6*", g.conf.wordleNumber, n)
+	title := fmt.Sprintf("Wordle %d %s/6*", g.wordleNumber, n)
 
 	return title + newLine + g.squaresString()
 }
