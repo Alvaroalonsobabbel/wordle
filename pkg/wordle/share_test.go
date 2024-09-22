@@ -16,7 +16,7 @@ func TestShareString(t *testing.T) {
 		got := wordle.Share()
 		want := "Wordle 0 2/6*" + newLine +
 			absentSquare + strings.Repeat(correctSquare, 4) +
-			newLine + strings.Repeat(correctSquare, 5) + newLine
+			newLine + strings.Repeat(correctSquare, 5)
 
 		assert.Equal(t, want, got)
 	})
@@ -33,7 +33,7 @@ func TestShareString(t *testing.T) {
 		want := "Wordle 0 6/6*" + newLine +
 			strings.Repeat(absentSquare, 5) + newLine +
 			strings.Repeat(absentSquare+strings.Repeat(correctSquare, 4)+newLine, 4) +
-			strings.Repeat(correctSquare, 5) + newLine
+			strings.Repeat(correctSquare, 5)
 
 		assert.Equal(t, want, got)
 	})
@@ -47,7 +47,9 @@ func TestShareString(t *testing.T) {
 		}
 
 		got := wordle.Share()
-		want := "Wordle 0 X/6*" + newLine + strings.Repeat(strings.Repeat(absentSquare, 5)+newLine, 6)
+		want := "Wordle 0 X/6*" + newLine +
+			strings.Repeat(strings.Repeat(absentSquare, 5)+newLine, 5) +
+			strings.Repeat(absentSquare, 5)
 
 		assert.Equal(t, want, got)
 	})
@@ -101,7 +103,7 @@ func TestGenerateEmojiString(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			wordle := &Game{Results: test.results}
-			got := wordle.generateEmojiString()
+			got := wordle.squaresString()
 			assert.Equal(t, test.want, got)
 		})
 	}

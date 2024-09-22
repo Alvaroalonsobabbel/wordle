@@ -2,28 +2,22 @@ package wordle
 
 import "net/http"
 
-type ConfigSetter func(*config)
-
-type config struct {
-	wordle       string
-	wordleNumber int
-	hardMode     bool
-}
+type ConfigSetter func(*Game)
 
 func WithHardMode(h bool) ConfigSetter {
-	return func(c *config) {
-		c.hardMode = h
+	return func(g *Game) {
+		g.hardMode = h
 	}
 }
 
 func WithDalyWordle() ConfigSetter {
-	return func(c *config) {
-		c.wordle, c.wordleNumber = fetchTodaysWordle(&http.Client{})
+	return func(g *Game) {
+		g.wordle, g.wordleNumber = fetchTodaysWordle(&http.Client{})
 	}
 }
 
 func WithCustomWord(word string) ConfigSetter {
-	return func(c *config) {
-		c.wordle = word
+	return func(g *Game) {
+		g.wordle = word
 	}
 }

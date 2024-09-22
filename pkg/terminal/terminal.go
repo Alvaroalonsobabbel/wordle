@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -11,19 +13,17 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
+const VERSION = "v0.1.1"
+
 const (
 	title    = "\033[1m6 attempts to find a 5-letter word\n\033[0m"
 	postGame = "(s)hare (e)xit"
 
-	// Byte relevant characters.
+	// Relevant unicode characters.
 	enter     = 13
 	backspace = 127
 	ctrlC     = 3
 	esc       = 27
-	e         = 69
-	E         = 101
-	s         = 115
-	S         = 83
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z\r\x7F]+$`
@@ -50,7 +50,7 @@ type renderer struct {
 	regex    *regexp.Regexp
 	errorMsg string
 
-	reader *reader
+	buf []byte
 }
 
 func New(w io.Writer, hardMode bool) *renderer { //nolint: revive
@@ -60,7 +60,7 @@ func New(w io.Writer, hardMode bool) *renderer { //nolint: revive
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
-		reader:   newReader(),
+		buf:      make([]byte, 1),
 	}
 }
 
@@ -71,7 +71,7 @@ func NewTestTerminal(w io.Writer, word string) *renderer { //nolint: revive
 		rounds:   NewRounds(),
 		printer:  w,
 		regex:    regexp.MustCompile(okRegex),
-		reader:   newReader(),
+		buf:      make([]byte, 1),
 	}
 }
 
@@ -89,21 +89,26 @@ func (r *renderer) Start() {
 			return
 		}
 
-		r.reader.read()
-		r.enter(r.reader.buf[0])
+		if quit := r.read(); quit {
+			return
+		}
+
+		r.enter(r.buf[0])
 	}
 }
 
 func (r *renderer) postGame() {
 	for {
-		r.reader.read()
+		if quit := r.read(); quit {
+			return
+		}
 
-		switch r.reader.buf[0] {
-		case s, S:
+		switch r.buf[0] {
+		case 's', 'S':
 			r.render()
 			fmt.Fprint(r.printer, newLine+r.wordle.Share())
 			fmt.Fprint(r.printer, newLine+postGame)
-		case e, E:
+		case 'e', 'E':
 			fmt.Fprint(r.printer, newLine)
 			return
 		}
@@ -218,4 +223,18 @@ func (r *renderer) showKBFlash(l byte) {
 	r.keyboard.am[char] = temp
 	time.Sleep(25 * time.Millisecond)
 	r.render()
+}
+
+func (r *renderer) read() bool {
+	_, err := os.Stdin.Read(r.buf)
+	if err != nil {
+		log.Fatalf("Error reading input: %v", err)
+	}
+
+	// Ctrl-C or Esc exits the game
+	if r.buf[0] == ctrlC || r.buf[0] == esc {
+		return true
+	}
+
+	return false
 }
