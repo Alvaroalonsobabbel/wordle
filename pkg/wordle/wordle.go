@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	Absent  = Status(iota) // word not found
-	Correct                // word found in the correct place
-	Present                // word found in an incorrect place
+	Absent  = iota // word not found
+	Correct        // word found in the correct place
+	Present        // word found in an incorrect place
 
 	wordleBaseURL = "https://www.nytimes.com/svc/wordle/v2/"
 )
@@ -38,25 +38,21 @@ var (
 	}
 )
 
-type (
-	Status int
-	Result []Status
+type Status struct {
+	Round        int              `json:"round"`
+	Results      [][]map[rune]int `json:"results"`
+	Wordle       string           `json:"wordle"`
+	PuzzleNumber int              `json:"puzzle_number"`
+	HardMode     bool             `json:"hard_mode"`
 
-	Game struct {
-		Round   int
-		Results [6]Result
+	hints      []rune
+	discovered [5]rune
 
-		allowedWords []string
-		hints        []rune
-		discovered   [5]rune
-		wordle       string
-		wordleNumber int
-		hardMode     bool
-	}
-)
+	allowedWords []string
+}
 
-func NewGame(conf ...ConfigSetter) *Game {
-	game := &Game{}
+func NewGame(conf ...ConfigSetter) *Status {
+	game := &Status{}
 	game.allowedWords = allowedWords()
 
 	for _, confSetter := range conf {
@@ -66,12 +62,12 @@ func NewGame(conf ...ConfigSetter) *Game {
 	return game
 }
 
-func (g *Game) Try(word string) error {
+func (g *Status) Try(word string) error {
 	if !slices.Contains(g.allowedWords, word) {
 		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
 	}
 
-	if g.hardMode {
+	if g.HardMode {
 		if err := g.hardModeCheck(word); err != nil {
 			return err
 		}
@@ -81,19 +77,19 @@ func (g *Game) Try(word string) error {
 	return nil
 }
 
-func (g *Game) Finish() (bool, string) {
-	if string(g.discovered[:]) == g.wordle {
+func (g *Status) Finish() (bool, string) {
+	if string(g.discovered[:]) == g.Wordle {
 		return true, finishMessage[g.Round]
 	}
 
 	if g.Round > 5 {
-		return true, g.wordle
+		return true, g.Wordle
 	}
 
 	return false, ""
 }
 
-func (g *Game) hardModeCheck(word string) error {
+func (g *Status) hardModeCheck(word string) error {
 	for i, v := range g.discovered {
 		if v != 0 && v != rune(word[i]) {
 			return fmt.Errorf("%s letter must be %c", ordinalNumbers[i], v)
@@ -109,28 +105,35 @@ func (g *Game) hardModeCheck(word string) error {
 	return nil
 }
 
-func (g *Game) result(word string) {
-	hintCounter := maxHints(g.wordle)
-	g.Results[g.Round] = Result{Absent, Absent, Absent, Absent, Absent}
+func (g *Status) result(word string) {
+	var (
+		hintCounter = maxHints(g.Wordle)
+		currentWord []map[rune]int
+	)
 
-	for i, v := range g.wordle {
-		if rune(word[i]) == v {
-			g.Results[g.Round][i] = Correct
-			g.discovered[i] = rune(word[i])
+	for _, v := range word {
+		currentWord = append(currentWord, map[rune]int{v: Absent})
+	}
+
+	for i, v := range word {
+		if v == rune(g.Wordle[i]) {
+			currentWord[i][v] = Correct
+			g.discovered[i] = v
 			hintCounter[v]--
 		}
 	}
 
-	for i := range g.wordle {
-		if strings.Contains(g.wordle, string(word[i])) {
-			g.hints = append(g.hints, rune(word[i]))
-			if hintCounter[rune(word[i])] > 0 && g.Results[g.Round][i] != Correct {
-				g.Results[g.Round][i] = Present
-				hintCounter[rune(word[i])]--
+	for i, v := range word {
+		if strings.Contains(g.Wordle, string(v)) {
+			g.hints = append(g.hints, v)
+			if hintCounter[v] > 0 && currentWord[i][v] != Correct {
+				currentWord[i][v] = Present
+				hintCounter[v]--
 			}
 		}
 	}
 
+	g.Results = append(g.Results, currentWord)
 	g.Round++
 }
 
