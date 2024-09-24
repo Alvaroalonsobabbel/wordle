@@ -7,38 +7,34 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRoundsString(t *testing.T) {
+func TestRoundString(t *testing.T) {
 	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
 	rounds := newRounds(wordle)
 
 	t.Run("emtpy rounds", func(t *testing.T) {
-		want := "\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r"
-		assert.Equal(t, want, rounds.string())
+		want := "\t_ _ _ _ _"
+		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("with one letter", func(t *testing.T) {
 		rounds.add("A")
-		expected := "\tA _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r"
-		assert.Equal(t, expected, rounds.string())
+		want := "\tA _ _ _ _"
+		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("with two letters and animations space", func(t *testing.T) {
 		rounds.add("A")
 		rounds.all[0].animation = " "
-		expected := "\t A A _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r"
-		assert.Equal(t, expected, rounds.string())
+		want := "\t A A _ _ _"
+		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("after a round exist in wordle status it prints the status with color", func(t *testing.T) {
 		wordle.Try("SCORE")
-		expected := "\t\033[1mS\033[0m \x1b[1m\x1b[33mC\x1b[0m \x1b[1m\x1b[32mO\x1b[0m \x1b[1m\x1b[32mR\x1b[0m \x1b[1m\x1b[32mE\x1b[0m\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r"
-		assert.Equal(t, expected, rounds.string())
-	})
-
-	t.Run("adding a futher letter prints the solved round plus the new one", func(t *testing.T) {
-		rounds.add("A")
-		expected := "\t\033[1mS\033[0m \x1b[1m\x1b[33mC\x1b[0m \x1b[1m\x1b[32mO\x1b[0m \x1b[1m\x1b[32mR\x1b[0m \x1b[1m\x1b[32mE\x1b[0m\n\r\tA _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r"
-		assert.Equal(t, expected, rounds.string())
+		want := "\t\033[1mS\033[0m \x1b[1m\x1b[33mC\x1b[0m \x1b[1m\x1b[32mO\x1b[0m \x1b[1m\x1b[32mR\x1b[0m \x1b[1m\x1b[32mE\x1b[0m"
+		assert.Equal(t, want, rounds.string(0))
+		want = "\t_ _ _ _ _"
+		assert.Equal(t, want, rounds.string(1))
 	})
 }
 

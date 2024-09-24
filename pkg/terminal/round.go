@@ -18,14 +18,10 @@ type rounds struct {
 	all []round
 }
 
-func emptyRound() round { //nolint: revive
-	return round{status: strings.Split(strings.Repeat("_", 5), "")}
-}
-
 func newRounds(w *wordle.Status) *rounds { //nolint: revive
 	var r []round
 	for range 6 {
-		r = append(r, emptyRound())
+		r = append(r, round{status: strings.Split(strings.Repeat("_", 5), "")})
 	}
 	return &rounds{
 		w:   w,
@@ -33,40 +29,39 @@ func newRounds(w *wordle.Status) *rounds { //nolint: revive
 	}
 }
 
-func (r *rounds) string() string {
-	var p string
-	for i := range 6 {
-		if i < len(r.w.Results) {
-			var str []string
-			for _, b := range r.w.Results[i] {
-				for k, v := range b {
-					switch v {
-					case wordle.Correct:
-						str = append(str, fmt.Sprintf(green, string(k)))
-					case wordle.Present:
-						str = append(str, fmt.Sprintf(yellow, string(k)))
-					case wordle.Absent:
-						str = append(str, fmt.Sprintf(black, string(k)))
-					}
+func (r *rounds) string(round int) string {
+	p := "\t"
+
+	if round < len(r.w.Results) {
+		var str []string
+		for _, b := range r.w.Results[round] {
+			for k, v := range b {
+				var color string
+				switch v {
+				case wordle.Correct:
+					color = green
+				case wordle.Present:
+					color = yellow
+				case wordle.Absent:
+					color = black
 				}
+				str = append(str, fmt.Sprintf(color, string(k)))
 			}
-			p += "\t" + strings.Join(str, " ") + newLine
-		} else {
-			p += "\t" + r.all[i].animation + strings.Join(r.all[i].status, " ") + newLine
 		}
+		p += strings.Join(str, " ")
+	} else {
+		p += r.all[round].animation + strings.Join(r.all[round].status, " ")
 	}
 
 	return p
 }
 
 func (r *rounds) add(s string) {
-	letter := strings.ToUpper(s)
-
 	if r.all[r.w.Round].index == 5 {
 		return
 	}
 
-	r.all[r.w.Round].status[r.all[r.w.Round].index] = letter
+	r.all[r.w.Round].status[r.all[r.w.Round].index] = strings.ToUpper(s)
 	r.all[r.w.Round].index++
 }
 
