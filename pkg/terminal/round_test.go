@@ -40,8 +40,7 @@ func TestRoundString(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	t.Run("adding one letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 
 		rounds.add("A")
 
@@ -49,8 +48,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding five consecutive letters", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 		letters := []string{"A", "B", "C", "D", "E"}
 
 		for _, l := range letters {
@@ -63,8 +61,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding more than 5 letters does not increment the counter nor adds another letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 		letters := []string{"A", "B", "C", "D", "E", "F"}
 
 		for _, l := range letters {
@@ -78,8 +75,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding a lower case letter makes it upper case", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 		rounds.add("a")
 
 		assert.Equal(t, "A", rounds.all[0].status[0])
@@ -88,8 +84,7 @@ func TestAdd(t *testing.T) {
 
 func TestBackspace(t *testing.T) {
 	t.Run("reverts the counter and replaces the letter with underscore", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 		rounds.add("A")
 		rounds.add("B")
 		rounds.backspace()
@@ -99,8 +94,7 @@ func TestBackspace(t *testing.T) {
 	})
 
 	t.Run("when counter is 0, backspace has no effect", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		rounds := newRounds(wordle)
+		rounds := newRounds(wordle.NewGame(wordle.WithCustomWord("CHORE")))
 		rounds.backspace()
 
 		assert.Equal(t, "_", rounds.all[0].status[0])
