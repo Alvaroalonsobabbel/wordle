@@ -24,18 +24,39 @@ func TestKeyboardString(t *testing.T) {
 }
 
 func TestMapRunes(t *testing.T) {
-	w := wordle.NewGame(wordle.WithCustomWord("CHAIR"))
-	kb := NewKB(w)
+	var (
+		w     = wordle.NewGame(wordle.WithCustomWord("CHAIR"))
+		kb    = NewKB(w)
+		tests = []struct {
+			word string
+			want map[rune]int
+		}{
+			{
+				"HELLO", map[rune]int{'H': wordle.Present, 'E': wordle.Absent, 'L': wordle.Absent, 'O': wordle.Absent},
+			},
+			{
+				"CELLO", map[rune]int{'C': wordle.Correct},
+			},
+			{
+				"OPIUM", map[rune]int{'O': wordle.Absent, 'P': wordle.Absent, 'I': wordle.Present, 'U': wordle.Absent, 'M': wordle.Absent},
+			},
+			{
+				"CHAIR", map[rune]int{'C': wordle.Correct, 'H': wordle.Correct, 'A': wordle.Correct, 'I': wordle.Correct, 'R': wordle.Correct},
+			},
+		}
+		assertMapRunes = func(t testing.TB, want map[rune]int, kb *keyboard) {
+			t.Helper()
 
-	word := "HELLO"
-	wantStatus := []int{wordle.Present, wordle.Absent, wordle.Absent, wordle.Absent, wordle.Absent}
-	w.Try(word)
+			for k, v := range want {
+				got := kb.used[k]
+				assert.Equal(t, v, got)
+			}
+		}
+	)
 
-	kb.mapRunes()
-
-	for i, v := range word {
-		rune, ok := kb.used[v]
-		assert.True(t, ok)
-		assert.Equal(t, wantStatus[i], rune)
+	for _, test := range tests {
+		w.Try(test.word)
+		kb.mapRunes()
+		assertMapRunes(t, test.want, kb)
 	}
 }
