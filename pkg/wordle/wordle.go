@@ -40,13 +40,12 @@ var (
 
 type Status struct {
 	Round        int              `json:"round"`
-	Results      [][]map[rune]int `json:"results"`
-	Wordle       string           `json:"wordle"`
 	PuzzleNumber int              `json:"puzzle_number"`
+	Wordle       string           `json:"wordle"`
 	HardMode     bool             `json:"hard_mode"`
-
-	hints      []rune
-	discovered [5]rune
+	Results      [][]map[rune]int `json:"results"`
+	Discovered   [5]rune          `json:"discovered"`
+	Hints        []rune           `json:"hints"`
 
 	allowedWords []string
 }
@@ -78,7 +77,7 @@ func (g *Status) Try(word string) error {
 }
 
 func (g *Status) Finish() (bool, string) {
-	if string(g.discovered[:]) == g.Wordle {
+	if string(g.Discovered[:]) == g.Wordle {
 		return true, finishMessage[g.Round]
 	}
 
@@ -90,13 +89,13 @@ func (g *Status) Finish() (bool, string) {
 }
 
 func (g *Status) hardModeCheck(word string) error {
-	for i, v := range g.discovered {
+	for i, v := range g.Discovered {
 		if v != 0 && v != rune(word[i]) {
 			return fmt.Errorf("%s letter must be %c", ordinalNumbers[i], v)
 		}
 	}
 
-	for _, v := range g.hints {
+	for _, v := range g.Hints {
 		if !strings.Contains(word, string(v)) {
 			return fmt.Errorf("Guess must contain %c", v) //nolint: stylecheck
 		}
@@ -118,14 +117,14 @@ func (g *Status) result(word string) {
 	for i, v := range word {
 		if v == rune(g.Wordle[i]) {
 			currentWord[i][v] = Correct
-			g.discovered[i] = v
+			g.Discovered[i] = v
 			hintCounter[v]--
 		}
 	}
 
 	for i, v := range word {
 		if strings.Contains(g.Wordle, string(v)) {
-			g.hints = append(g.hints, v)
+			g.Hints = append(g.Hints, v)
 			if hintCounter[v] > 0 && currentWord[i][v] != Correct {
 				currentWord[i][v] = Present
 				hintCounter[v]--

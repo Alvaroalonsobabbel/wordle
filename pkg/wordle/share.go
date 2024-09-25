@@ -15,7 +15,7 @@ const (
 
 func (g *Status) Share() string {
 	n := strconv.Itoa(g.Round)
-	if string(g.discovered[:]) != g.Wordle {
+	if string(g.Discovered[:]) != g.Wordle {
 		n = "X"
 	}
 
