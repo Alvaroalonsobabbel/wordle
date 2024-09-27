@@ -30,7 +30,7 @@ func newRounds(w *wordle.Status) *rounds { //nolint: revive
 }
 
 func (r *rounds) string(round int) string {
-	p := "\t"
+	p := tab
 
 	if round < len(r.w.Results) {
 		var str []string
