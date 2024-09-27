@@ -33,8 +33,7 @@ func TestTry(t *testing.T) {
 				"CHORE", "ROACH", []map[rune]int{{'R': Present}, {'O': Present}, {'A': Absent}, {'C': Present}, {'H': Present}},
 			},
 			{
-				// Second to last L should be absent as one L has been provided and
-				// it was already been discovered.
+				// Second to last L should be absent as the L has already been discovered.
 				"SPOIL", "QUILL", []map[rune]int{{'Q': Absent}, {'U': Absent}, {'I': Present}, {'L': Absent}, {'L': Correct}},
 			},
 		}
