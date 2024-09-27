@@ -16,8 +16,8 @@ func WithDalyWordle() ConfigSetter {
 	}
 }
 
-func WithCustomWord(word string) ConfigSetter {
+func WithCustomWord(w string) ConfigSetter {
 	return func(g *Status) {
-		g.Wordle = word
+		g.Wordle = w
 	}
 }
