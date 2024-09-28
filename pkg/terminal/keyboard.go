@@ -8,8 +8,9 @@ import (
 )
 
 type keyboard struct {
-	w    *wordle.Status
-	used map[rune]int
+	w     *wordle.Status
+	used  map[rune]int
+	flash string
 }
 
 func NewKB(w *wordle.Status) *keyboard { //nolint: revive
@@ -35,6 +36,10 @@ func (kb *keyboard) string() string {
 
 func (kb *keyboard) renderRow(row []string) string {
 	for i, v := range row {
+		if v == kb.flash {
+			row[i] = fmt.Sprintf(flash, v)
+			continue
+		}
 		stat, ok := kb.used[[]rune(v)[0]]
 		if ok {
 			var color string

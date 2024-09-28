@@ -78,29 +78,21 @@ func (s *screen) renderPostGame() {
 	fmt.Fprintf(s.Writer, moveTo, postGamePos, pg)
 }
 
-func (s *screen) renderKBFlash() {
-	// flash pressed key
-	// update kb
-	//
-	// func (r *renderer) showKBFlash(l byte) {
-	// 	var char string
-	// 	switch l {
-	// 	case backspace:
-	// 		char = "←"
-	// 	case enter:
-	// 		char = "↩︎"
-	// 	default:
-	// 		char = strings.ToUpper(string(l))
-	// 	}
-
-	//		f := fmt.Sprintf(flash, char)
-	//		temp := r.keyboard.am[char]
-	//		r.keyboard.am[char] = f
-	//		r.render()
-	//		r.keyboard.am[char] = temp
-	//		time.Sleep(25 * time.Millisecond)
-	//		r.render()
-	//	}
+func (s *screen) renderKBFlash(l byte) {
+	var char string
+	switch l {
+	case backspace:
+		char = "←"
+	case enter:
+		char = "↩︎"
+	default:
+		char = strings.ToUpper(string(l))
+	}
+	s.keyboard.flash = char
+	s.renderKB()
+	time.Sleep(25 * time.Millisecond)
+	s.keyboard.flash = ""
+	s.renderKB()
 }
 
 func (s *screen) renderErr(err error) {
