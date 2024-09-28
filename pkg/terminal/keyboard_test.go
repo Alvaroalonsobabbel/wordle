@@ -17,7 +17,7 @@ func TestKeyboardString(t *testing.T) {
 	})
 
 	t.Run("game with 1 round highlight the used letters", func(t *testing.T) {
-		wordle.Try("HELLO")
+		wordle.Try("HELLO") //nolint: errcheck
 		expected := "   Q W \x1b[7m\x1b[90mE\x1b[0m R T Z U I \x1b[7m\x1b[90mO\x1b[0m P\n\r    A S D F G \x1b[7m\x1b[33mH\x1b[0m J K \x1b[7m\x1b[90mL\x1b[0m\n\r   ↩︎ Y X C V B N M ←\n\r"
 		assert.Equal(t, expected, kb.string())
 	})
@@ -55,7 +55,7 @@ func TestMapRunes(t *testing.T) {
 	)
 
 	for _, test := range tests {
-		w.Try(test.word)
+		w.Try(test.word) //nolint: errcheck
 		kb.mapRunes()
 		assertMapRunes(t, test.want, kb)
 	}

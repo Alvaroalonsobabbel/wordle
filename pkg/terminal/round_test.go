@@ -30,7 +30,7 @@ func TestRoundString(t *testing.T) {
 	})
 
 	t.Run("after a round exist in wordle status it prints the status with color", func(t *testing.T) {
-		wordle.Try("SCORE")
+		wordle.Try("SCORE") //nolint: errcheck
 		want := "\t\033[1mS\033[0m \x1b[1m\x1b[33mC\x1b[0m \x1b[1m\x1b[32mO\x1b[0m \x1b[1m\x1b[32mR\x1b[0m \x1b[1m\x1b[32mE\x1b[0m"
 		assert.Equal(t, want, rounds.string(0))
 		want = "\t_ _ _ _ _"
