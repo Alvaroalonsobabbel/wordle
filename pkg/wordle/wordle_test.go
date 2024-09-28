@@ -15,27 +15,26 @@ func TestTry(t *testing.T) {
 		tests := []struct {
 			word           string
 			inputWord      string
-			expectedStatus *Result
+			expectedResult []map[rune]int
 		}{
 			{
-				"CLEAR", "CEDAR", &Result{Correct, Present, Absent, Correct, Correct},
+				"CLEAR", "CEDAR", []map[rune]int{{'C': Correct}, {'E': Present}, {'D': Absent}, {'A': Correct}, {'R': Correct}},
 			},
 			{
-				"CHARM", "BLAST", &Result{Absent, Absent, Correct, Absent, Absent},
+				"CHARM", "BLAST", []map[rune]int{{'B': Absent}, {'L': Absent}, {'A': Correct}, {'S': Absent}, {'T': Absent}},
 			},
 			{
-				"TIGHT", "FIGHT", &Result{Absent, Correct, Correct, Correct, Correct},
+				"TIGHT", "FIGHT", []map[rune]int{{'F': Absent}, {'I': Correct}, {'G': Correct}, {'H': Correct}, {'T': Correct}},
 			},
 			{
-				"CRACK", "OPIUM", &Result{Absent, Absent, Absent, Absent, Absent},
+				"CRACK", "OPIUM", []map[rune]int{{'O': Absent}, {'P': Absent}, {'I': Absent}, {'U': Absent}, {'M': Absent}},
 			},
 			{
-				"CHORE", "ROACH", &Result{Present, Present, Absent, Present, Present},
+				"CHORE", "ROACH", []map[rune]int{{'R': Present}, {'O': Present}, {'A': Absent}, {'C': Present}, {'H': Present}},
 			},
 			{
-				// Second to last L should be absent as one L has been provided and
-				// it was already been discovered.
-				"SPOIL", "QUILL", &Result{Absent, Absent, Present, Absent, Correct},
+				// Second to last L should be absent as the L has already been discovered.
+				"SPOIL", "QUILL", []map[rune]int{{'Q': Absent}, {'U': Absent}, {'I': Present}, {'L': Absent}, {'L': Correct}},
 			},
 		}
 
@@ -45,9 +44,7 @@ func TestTry(t *testing.T) {
 				err := wordle.Try(test.inputWord)
 				assert.NoError(t, err)
 
-				for i := range len(test.word) {
-					assert.Equal(t, (*test.expectedStatus)[i], wordle.Results[0][i], fmt.Sprintf("error in char %d", i))
-				}
+				assert.Equal(t, test.expectedResult, wordle.Results[0])
 			})
 		}
 	})
@@ -56,15 +53,16 @@ func TestTry(t *testing.T) {
 		wordle := NewGame(WithCustomWord("STILL"))
 		err := wordle.Try("LOVER")
 		assert.NoError(t, err)
-		expectedResult := Result{Present, Absent, Absent, Absent, Absent}
+
+		expectedResult := []map[rune]int{{'L': Present}, {'O': Absent}, {'V': Absent}, {'E': Absent}, {'R': Absent}}
 		assert.Equal(t, expectedResult, wordle.Results[wordle.Round-1])
 
 		wordle.Try("ALLOW") //nolint: errcheck
-		expectedResult = Result{Absent, Present, Present, Absent, Absent}
+		expectedResult = []map[rune]int{{'A': Absent}, {'L': Present}, {'L': Present}, {'O': Absent}, {'W': Absent}}
 		assert.Equal(t, expectedResult, wordle.Results[wordle.Round-1])
 
 		wordle.Try("LEVEL") //nolint: errcheck
-		expectedResult = Result{Present, Absent, Absent, Absent, Correct}
+		expectedResult = []map[rune]int{{'L': Present}, {'E': Absent}, {'V': Absent}, {'E': Absent}, {'L': Correct}}
 		assert.Equal(t, expectedResult, wordle.Results[wordle.Round-1])
 	})
 
@@ -141,29 +139,35 @@ func TestFinish(t *testing.T) {
 		assert.True(t, ok)
 	})
 
-	t.Run("wining first try return 'Genius'", func(t *testing.T) {
-		wordle := NewGame(WithCustomWord("HELLO"))
-		err := wordle.Try("HELLO")
-		assert.NoError(t, err)
-
-		ok, msg := wordle.Finish()
-		assert.True(t, ok)
-		assert.Equal(t, msg, "Genius")
-	})
-
-	t.Run("wining last try return 'Phew!'", func(t *testing.T) {
-		wordle := NewGame(WithCustomWord("HELLO"))
-		for range 5 {
-			wordle.Try("WORLD") //nolint: errcheck
+	t.Run("finishing messages", func(t *testing.T) {
+		tests := []struct {
+			misses      int
+			expectedMsg string
+		}{
+			{0, "Genius"},
+			{1, "Magnificent"},
+			{2, "Impressive"},
+			{3, "Splendid"},
+			{4, "Great"},
+			{5, "Phew!"},
 		}
-		wordle.Try("HELLO") //nolint: errcheck
 
-		ok, msg := wordle.Finish()
-		assert.True(t, ok)
-		assert.Equal(t, msg, "Phew!")
+		for _, test := range tests {
+			wordle := NewGame(WithCustomWord("HELLO"))
+			for range test.misses {
+				err := wordle.Try("CHAIR")
+				assert.NoError(t, err)
+			}
+			err := wordle.Try("HELLO")
+			assert.NoError(t, err)
+
+			ok, msg := wordle.Finish()
+			assert.True(t, ok)
+			assert.Equal(t, test.expectedMsg, msg)
+		}
 	})
 
-	t.Run("finish returns true if game ends due to lose and err msg is current wordle", func(t *testing.T) {
+	t.Run("finish returns true if game ends due to lose and msg is current wordle", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
 
 		for range 6 {

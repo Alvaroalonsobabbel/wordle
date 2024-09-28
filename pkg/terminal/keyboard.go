@@ -8,57 +8,64 @@ import (
 )
 
 type keyboard struct {
-	am map[string]string
+	w     *wordle.Status
+	used  map[rune]int
+	flash string
 }
 
-func NewKB() *keyboard { //nolint: revive
-	return &keyboard{am: newAlphabetMap()}
-}
-
-func (k *keyboard) update(res *wordle.Result, word string) {
-	status := strings.Split(word, "")
-	for i, v := range status {
-		switch (*res)[i] {
-		case wordle.Present:
-			if k.am[v] != fmt.Sprintf(greenBackground, v) {
-				k.am[v] = fmt.Sprintf(yellowBackground, v)
-			}
-		case wordle.Correct:
-			k.am[v] = fmt.Sprintf(greenBackground, v)
-		case wordle.Absent:
-			k.am[v] = fmt.Sprintf(greyBackground, v)
-		}
+func NewKB(w *wordle.Status) *keyboard { //nolint: revive
+	return &keyboard{
+		w:    w,
+		used: make(map[rune]int),
 	}
 }
 
-func (k *keyboard) string() string {
+func (kb *keyboard) string() string {
+	kb.mapRunes()
+
 	var (
 		firstRow  = []string{"Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P"}
 		secondRow = []string{"A", "S", "D", "F", "G", "H", "J", "K", "L"}
-		thirdRow  = []string{"←", "Y", "X", "C", "V", "B", "N", "M", "↩︎"}
+		thirdRow  = []string{"↩︎", "Y", "X", "C", "V", "B", "N", "M", "←"}
 	)
 
-	return "   " + k.renderRow(firstRow) + newLine +
-		"    " + k.renderRow(secondRow) + newLine +
-		"   " + k.renderRow(thirdRow) + newLine
+	return "   " + kb.renderRow(firstRow) + newLine +
+		"    " + kb.renderRow(secondRow) + newLine +
+		"   " + kb.renderRow(thirdRow) + newLine
 }
 
-func (k *keyboard) renderRow(row []string) string {
+func (kb *keyboard) renderRow(row []string) string {
 	for i, v := range row {
-		row[i] = k.am[v]
+		if v == kb.flash {
+			row[i] = fmt.Sprintf(flash, v)
+			continue
+		}
+		stat, ok := kb.used[[]rune(v)[0]]
+		if ok {
+			var color string
+			switch stat {
+			case wordle.Correct:
+				color = greenBackground
+			case wordle.Present:
+				color = yellowBackground
+			case wordle.Absent:
+				color = greyBackground
+			}
+			row[i] = fmt.Sprintf(color, v)
+		}
 	}
 
 	return strings.Join(row, " ")
 }
 
-func newAlphabetMap() map[string]string {
-	var a = make(map[string]string)
-	for i := range 26 {
-		letter := string(rune('A' + i))
-		a[letter] = letter
+func (kb *keyboard) mapRunes() {
+	for _, all := range kb.w.Results {
+		for _, round := range all {
+			for k, v := range round {
+				if kb.used[k] != wordle.Correct {
+					kb.used[k] = v
+				}
+			}
+		}
 	}
-	a["←"] = "←"
-	a["↩︎"] = "↩︎"
-
-	return a
 }
