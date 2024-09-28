@@ -3,6 +3,7 @@ package terminal
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -46,7 +47,11 @@ type screen struct {
 	postGame string
 }
 
-func newScreen(w io.Writer, wordle *wordle.Status) *screen {
+func newScreen(wordle *wordle.Status) *screen {
+	return newTestScreen(os.Stdout, wordle)
+}
+
+func newTestScreen(w io.Writer, wordle *wordle.Status) *screen {
 	return &screen{
 		wordle,
 		newRounds(wordle),
@@ -118,10 +123,6 @@ func (s *screen) renderErr(err error) {
 	}()
 }
 
-func (s *screen) rewriteRow(row int, content string) {
-	fmt.Fprintf(s.Writer, moveTo, row, clearRow+content)
-}
-
 func (s *screen) renderResult() {
 	// this happens after wordle.Try increments the round counter
 	// that's why we run it with wordle.Round - 1
@@ -171,4 +172,8 @@ func (s *screen) renderAll() {
 		s.postGame,
 		newLine,
 	)
+}
+
+func (s *screen) rewriteRow(row int, content string) {
+	fmt.Fprintf(s.Writer, moveTo, row, clearRow+content)
 }
