@@ -38,6 +38,8 @@ You can check the official Wordle rules [here](https://www.nytimes.com/2023/08/0
 
 You can quit the game at any time by pressing `Esc` or `Ctrl C`
 
+Status is held every time you quit the game or the game ends. The status will be automatically cleared when there is a new Wordle available or by manually by using the `-rmstatus` flag.
+
 ## Options
 
 Enables Worlde's hard mode.
