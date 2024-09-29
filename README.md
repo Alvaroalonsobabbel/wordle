@@ -45,7 +45,12 @@ Enables Worlde's hard mode.
 wordle -hard
 ```
 
-Prints current version
+Prints current version.
 ```
 wordle -version
+```
+
+Removes the status file.
+```
+wordle -rmstatus
 ```

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	statusFile = ".wordle"
+	StatusFile = ".wordle"
 	read       = os.O_RDONLY
 	write      = os.O_CREATE | os.O_RDWR | os.O_TRUNC
 )
@@ -82,7 +82,7 @@ func (opener) file(mode int) (io.ReadWriteCloser, error) {
 		return nil, fmt.Errorf("error getting home directory: %v", err)
 	}
 
-	file, err := os.OpenFile(filepath.Join(homeDir, statusFile), mode, 0644)
+	file, err := os.OpenFile(filepath.Join(homeDir, StatusFile), mode, 0644)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil, err

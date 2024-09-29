@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/Alvaroalonsobabbel/wordle/pkg/terminal"
 	"golang.org/x/term"
@@ -44,6 +45,7 @@ func startRawConsole() func() {
 func evalOptions() {
 	flag.BoolVar(&hardMode, "hard", false, "Sets the Game to Hard Mode")
 	flag.BoolFunc("version", "Prints version", version)
+	flag.BoolFunc("rmstatus", "Deletes the status file", removeStatus)
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -51,6 +53,24 @@ func evalOptions() {
 
 func version(string) error {
 	fmt.Println(terminal.VERSION)
+	os.Exit(0)
+
+	return nil
+}
+
+func removeStatus(sss string) error {
+	fmt.Println(sss)
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return fmt.Errorf("error getting home directory: %v", err)
+	}
+
+	err = os.Remove(filepath.Join(homeDir, terminal.StatusFile))
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("Error deleting file: %v\n", err)
+	}
+
+	fmt.Println("Status file removed.")
 	os.Exit(0)
 
 	return nil
