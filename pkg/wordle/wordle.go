@@ -52,7 +52,6 @@ type Status struct {
 
 func NewGame(conf ...ConfigSetter) *Status {
 	game := &Status{}
-	game.allowedWords = allowedWords()
 
 	for _, confSetter := range conf {
 		confSetter(game)
@@ -62,8 +61,8 @@ func NewGame(conf ...ConfigSetter) *Status {
 }
 
 func (g *Status) Try(word string) error {
-	if !slices.Contains(g.allowedWords, word) {
-		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
+	if err := g.isAllowed(word); err != nil {
+		return err
 	}
 
 	if g.HardMode {
@@ -136,6 +135,21 @@ func (g *Status) result(word string) {
 	g.Round++
 }
 
+func (s *Status) isAllowed(word string) error {
+	if s.allowedWords == nil {
+		s.allowedWords = slices.Concat(
+			strings.Split(strings.ToUpper(allowedList), "\n"),
+			strings.Split(strings.ToUpper(answersList), "\n"),
+		)
+	}
+
+	if !slices.Contains(s.allowedWords, word) {
+		return fmt.Errorf("Not in word list: %s", word) //nolint: stylecheck
+	}
+
+	return nil
+}
+
 func maxHints(wordle string) map[rune]int {
 	hintMap := make(map[rune]int)
 	for _, v := range wordle {
@@ -164,11 +178,4 @@ func fetchTodaysWordle(c *http.Client) (string, int) {
 	}
 
 	return strings.ToUpper(r.Solution), r.Number
-}
-
-func allowedWords() []string {
-	return slices.Concat(
-		strings.Split(strings.ToUpper(allowedList), "\n"),
-		strings.Split(strings.ToUpper(answersList), "\n"),
-	)
 }
