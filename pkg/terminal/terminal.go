@@ -29,6 +29,7 @@ type terminal struct {
 	wordle *wordle.Status
 	screen *screen
 	regex  *regexp.Regexp
+	status *status
 	reader io.Reader
 
 	buf []byte
@@ -40,6 +41,7 @@ func New(hardMode bool) *terminal { //nolint: revive
 		reader: os.Stdin,
 		wordle: wordle,
 		screen: newScreen(wordle),
+		status: newStatus(wordle),
 		regex:  regexp.MustCompile(okRegex),
 		buf:    make([]byte, 1),
 	}
@@ -57,8 +59,24 @@ func NewTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 }
 
 func (t *terminal) Start() {
+	if err := t.status.loadGame(); err != nil {
+		fmt.Println(err)
+
+		return
+	}
+
+	defer func() {
+		t.screen.renderAll()
+		if err := t.status.saveGame(); err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	t.game()
+}
+
+func (t *terminal) game() {
 	t.screen.renderAll()
-	defer t.screen.renderAll()
 
 	for {
 		ok, msg := t.wordle.Finish()
