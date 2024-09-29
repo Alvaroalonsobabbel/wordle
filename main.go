@@ -67,7 +67,7 @@ func removeStatus(sss string) error {
 
 	err = os.Remove(filepath.Join(homeDir, terminal.StatusFile))
 	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("Error deleting file: %v\n", err)
+		return fmt.Errorf("error deleting file: %v", err)
 	}
 
 	fmt.Println("Status file removed.")

@@ -60,41 +60,41 @@ func NewGame(conf ...ConfigSetter) *Status {
 	return game
 }
 
-func (g *Status) Try(word string) error {
-	if err := g.isAllowed(word); err != nil {
+func (s *Status) Try(word string) error {
+	if err := s.isAllowed(word); err != nil {
 		return err
 	}
 
-	if g.HardMode {
-		if err := g.hardModeCheck(word); err != nil {
+	if s.HardMode {
+		if err := s.hardModeCheck(word); err != nil {
 			return err
 		}
 	}
-	g.result(word)
+	s.result(word)
 
 	return nil
 }
 
-func (g *Status) Finish() (bool, string) {
-	if string(g.Discovered[:]) == g.Wordle {
-		return true, finishMessage[g.Round]
+func (s *Status) Finish() (bool, string) {
+	if string(s.Discovered[:]) == s.Wordle {
+		return true, finishMessage[s.Round]
 	}
 
-	if g.Round > 5 {
-		return true, g.Wordle
+	if s.Round > 5 {
+		return true, s.Wordle
 	}
 
 	return false, ""
 }
 
-func (g *Status) hardModeCheck(word string) error {
-	for i, v := range g.Discovered {
+func (s *Status) hardModeCheck(word string) error {
+	for i, v := range s.Discovered {
 		if v != 0 && v != rune(word[i]) {
 			return fmt.Errorf("%s letter must be %c", ordinalNumbers[i], v)
 		}
 	}
 
-	for _, v := range g.Hints {
+	for _, v := range s.Hints {
 		if !strings.Contains(word, string(v)) {
 			return fmt.Errorf("Guess must contain %c", v) //nolint: stylecheck
 		}
@@ -103,9 +103,9 @@ func (g *Status) hardModeCheck(word string) error {
 	return nil
 }
 
-func (g *Status) result(word string) {
+func (s *Status) result(word string) {
 	var (
-		hintCounter = maxHints(g.Wordle)
+		hintCounter = maxHints(s.Wordle)
 		currentWord []map[rune]int
 	)
 
@@ -114,16 +114,16 @@ func (g *Status) result(word string) {
 	}
 
 	for i, v := range word {
-		if v == rune(g.Wordle[i]) {
+		if v == rune(s.Wordle[i]) {
 			currentWord[i][v] = Correct
-			g.Discovered[i] = v
+			s.Discovered[i] = v
 			hintCounter[v]--
 		}
 	}
 
 	for i, v := range word {
-		if strings.Contains(g.Wordle, string(v)) {
-			g.Hints = append(g.Hints, v)
+		if strings.Contains(s.Wordle, string(v)) {
+			s.Hints = append(s.Hints, v)
 			if hintCounter[v] > 0 && currentWord[i][v] != Correct {
 				currentWord[i][v] = Present
 				hintCounter[v]--
@@ -131,8 +131,8 @@ func (g *Status) result(word string) {
 		}
 	}
 
-	g.Results = append(g.Results, currentWord)
-	g.Round++
+	s.Results = append(s.Results, currentWord)
+	s.Round++
 }
 
 func (s *Status) isAllowed(word string) error {
