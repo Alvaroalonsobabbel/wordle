@@ -13,21 +13,21 @@ const (
 	newLine       = "\n\r"
 )
 
-func (g *Status) Share() string {
-	n := strconv.Itoa(g.Round)
-	if string(g.Discovered[:]) != g.Wordle {
+func (s *Status) Share() string {
+	n := strconv.Itoa(s.Round)
+	if string(s.Discovered[:]) != s.Wordle {
 		n = "X"
 	}
 
-	title := fmt.Sprintf("Wordle %d %s/6*", g.PuzzleNumber, n)
+	title := fmt.Sprintf("Wordle %d %s/6*", s.PuzzleNumber, n)
 
-	return title + newLine + g.squaresString()
+	return title + newLine + s.squaresString()
 }
 
-func (g *Status) squaresString() string {
+func (s *Status) squaresString() string {
 	var finalResult []string
 
-	for _, res := range g.Results {
+	for _, res := range s.Results {
 		var row string
 		for _, stat := range res {
 			for _, v := range stat {

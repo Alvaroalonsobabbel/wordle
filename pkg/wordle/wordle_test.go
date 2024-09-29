@@ -180,6 +180,20 @@ func TestFinish(t *testing.T) {
 	})
 }
 
+func TestIsAllowed(t *testing.T) {
+	wordle := NewGame(WithCustomWord("HELLO"))
+	assert.Nil(t, wordle.allowedWords)
+
+	err := wordle.isAllowed("CHORE")
+	assert.NoError(t, err)
+	err = wordle.isAllowed("AAAAA")
+	assert.Error(t, err)
+
+	wordle.allowedWords = nil
+	err = wordle.isAllowed("CHORE")
+	assert.NoError(t, err)
+}
+
 type mockNYTAPI struct{}
 
 func (mockNYTAPI) RoundTrip(*http.Request) (*http.Response, error) {
