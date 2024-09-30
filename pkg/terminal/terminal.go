@@ -22,13 +22,12 @@ const (
 	esc       = 27
 
 	// Accepted characters regex.
-	okRegex = `^[A-Z\r\x7F]+$`
+	okRegex = `^[A-Z]$`
 )
 
 type terminal struct {
 	wordle *wordle.Status
 	screen *screen
-	regex  *regexp.Regexp
 	status *status
 	reader io.Reader
 
@@ -42,7 +41,6 @@ func New(hardMode bool) *terminal { //nolint: revive
 		wordle: wordle,
 		screen: newScreen(wordle),
 		status: newStatus(wordle),
-		regex:  regexp.MustCompile(okRegex),
 		buf:    make([]byte, 1),
 	}
 }
@@ -53,7 +51,6 @@ func NewTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 		reader: r,
 		wordle: wordle,
 		screen: newTestScreen(w, wordle),
-		regex:  regexp.MustCompile(okRegex),
 		buf:    make([]byte, 1),
 	}
 }
@@ -114,11 +111,8 @@ func (t *terminal) postGame() {
 }
 
 func (t *terminal) processInput(b byte) {
-	if !t.regex.MatchString(strings.ToUpper(string(b))) {
-		return
-	}
-
 	t.screen.renderKBFlash(b)
+
 	switch b {
 	case backspace:
 		t.screen.rounds.backspace()
@@ -137,7 +131,9 @@ func (t *terminal) processInput(b byte) {
 		t.screen.renderResult()
 		t.screen.renderKB()
 	default:
-		t.screen.rounds.add(string(b))
+		if regexp.MustCompile(okRegex).MatchString(strings.ToUpper(string(b))) {
+			t.screen.rounds.add(string(b))
+		}
 	}
 
 	t.screen.renderRound()
