@@ -12,7 +12,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-const VERSION = "v0.2.1"
+const VERSION = "v0.2.2"
 
 const (
 	// Relevant unicode characters to control the game.
@@ -40,16 +40,6 @@ func New(hardMode bool) *terminal { //nolint: revive
 		wordle: wordle,
 		screen: newScreen(wordle),
 		status: newStatus(wordle),
-		buf:    make([]byte, 1),
-	}
-}
-
-func NewTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
-	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-	return &terminal{
-		reader: r,
-		wordle: wordle,
-		screen: newTestScreen(w, wordle),
 		buf:    make([]byte, 1),
 	}
 }
@@ -94,6 +84,7 @@ func (t *terminal) game() {
 
 func (t *terminal) postGame() {
 	t.screen.renderPostGame()
+
 	for {
 		if quit := t.read(); quit {
 			return
@@ -139,8 +130,7 @@ func (t *terminal) processInput(b byte) {
 }
 
 func (t *terminal) read() bool {
-	_, err := t.reader.Read(t.buf)
-	if err != nil {
+	if _, err := t.reader.Read(t.buf); err != nil {
 		log.Fatalf("Error reading input: %v", err)
 	}
 
