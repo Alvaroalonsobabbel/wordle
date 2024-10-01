@@ -1,4 +1,5 @@
 # Terminal Wordle
+
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Alvaroalonsobabbel/wordle) ![Test](https://github.com/Alvaroalonsobabbel/wordle/actions/workflows/test.yml/badge.svg) ![Latest Release](https://img.shields.io/github/v/release/Alvaroalonsobabbel/wordle?color=blue&label=Latest%20Release)
 
 Play the NYT daily Wordle from the comfort of your terminal!
@@ -20,7 +21,7 @@ curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/i
 ```
 
 - You'll be required to enter your admin password.
-- You might be required to allow the program to run in the *System Settings - Privavacy & Security* tab.
+- You might be required to allow the program to run in the _System Settings - Privavacy & Security_ tab.
 
 ### Compiling the binary yourself
 
@@ -36,23 +37,26 @@ You can check the official Wordle rules [here](https://www.nytimes.com/2023/08/0
 1. Start Wordle by running `wordle` in your Terminal.
 2. Have fun!
 
-You can quit the game at any time by pressing `Esc` or `Ctrl C`
+You can quit the game at any time by pressing `Ctrl C`
 
 Status is held every time you quit the game or the game ends. The status will be automatically cleared when there is a new Wordle available or by manually by using the `-rmstatus` flag.
 
 ## Options
 
 Enables Worlde's hard mode.
-```
+
+```bash
 wordle -hard
 ```
 
 Prints current version.
-```
+
+```bash
 wordle -version
 ```
 
 Removes the status file.
-```
+
+```bash
 wordle -rmstatus
 ```

@@ -4,6 +4,7 @@ import (
 	"io"
 	"testing"
 
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func (m *mockReader) Read(p []byte) (int, error) {
 
 func TestRead(t *testing.T) {
 	mockReader := &mockReader{}
-	terminal := NewTestTerminal(io.Discard, mockReader)
+	terminal := newTestTerminal(io.Discard, mockReader)
 
 	tests := []struct {
 		name     string
@@ -27,7 +28,6 @@ func TestRead(t *testing.T) {
 		wantExit bool
 	}{
 		{"ctrl-c exits the game", []byte{ctrlC}, true},
-		{"esc exits the game", []byte{esc}, true},
 		{"'A' does not exits the game", []byte{'A'}, false},
 	}
 
@@ -41,5 +41,15 @@ func TestRead(t *testing.T) {
 				assert.False(t, exit)
 			}
 		})
+	}
+}
+
+func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
+	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+	return &terminal{
+		reader: r,
+		wordle: wordle,
+		screen: newTestScreen(w, wordle),
+		buf:    make([]byte, 1),
 	}
 }
