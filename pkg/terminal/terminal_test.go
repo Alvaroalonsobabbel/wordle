@@ -27,7 +27,6 @@ func TestRead(t *testing.T) {
 		wantExit bool
 	}{
 		{"ctrl-c exits the game", []byte{ctrlC}, true},
-		{"esc exits the game", []byte{esc}, true},
 		{"'A' does not exits the game", []byte{'A'}, false},
 	}
 

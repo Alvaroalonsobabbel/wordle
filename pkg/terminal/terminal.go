@@ -12,14 +12,13 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-const VERSION = "v0.2.0"
+const VERSION = "v0.2.1"
 
 const (
 	// Relevant unicode characters to control the game.
 	enter     = 13
 	backspace = 127
 	ctrlC     = 3
-	esc       = 27
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z]$`
@@ -145,8 +144,8 @@ func (t *terminal) read() bool {
 		log.Fatalf("Error reading input: %v", err)
 	}
 
-	// Ctrl-C or Esc exits the game
-	if t.buf[0] == ctrlC || t.buf[0] == esc {
+	// Ctrl-C exits the game
+	if t.buf[0] == ctrlC {
 		return true
 	}
 
