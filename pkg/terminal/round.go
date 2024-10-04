@@ -49,7 +49,7 @@ func (r *rounds) string(round int) string {
 			}
 		}
 		p += strings.Join(str, " ")
-	} else {
+	} else if r.w.Round < 6 {
 		p += r.all[round].animation + strings.Join(r.all[round].status, " ")
 	}
 
