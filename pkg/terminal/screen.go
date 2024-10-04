@@ -123,7 +123,6 @@ func (s *screen) renderResult() {
 	// that's why we run it with wordle.Round - 1
 	var (
 		r     = s.Round - 1
-		pos   = s.Round + roundOffset - 1
 		round = s.rounds.all[r].status
 	)
 
@@ -138,12 +137,12 @@ func (s *screen) renderResult() {
 			}
 
 			round[i] = "_"
-			s.rewriteRow(pos, tab+strings.Join(round, " "))
+			s.rewriteRow(r+roundOffset, tab+strings.Join(round, " "))
 			time.Sleep(200 * time.Millisecond)
 			round[i] = fmt.Sprintf(color, string(k))
 		}
 
-		s.rewriteRow(pos, tab+strings.Join(round, " "))
+		s.rewriteRow(r+roundOffset, tab+strings.Join(round, " "))
 	}
 }
 
