@@ -12,7 +12,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-const VERSION = "v0.2.2"
+const VERSION = "v0.3.0"
 
 const (
 	// Relevant unicode characters to control the game.

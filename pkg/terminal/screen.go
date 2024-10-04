@@ -42,6 +42,7 @@ type screen struct {
 	*wordle.Status
 	*rounds
 	*keyboard
+	*errorQ
 	io.Writer
 	msg      string
 	postGame string
@@ -56,6 +57,7 @@ func newTestScreen(w io.Writer, wordle *wordle.Status) *screen {
 		wordle,
 		newRounds(wordle),
 		NewKB(wordle),
+		newErrorLogger(w),
 		w,
 		"",
 		"",
@@ -101,26 +103,19 @@ func (s *screen) renderKBFlash(l byte) {
 }
 
 func (s *screen) renderErr(err error) {
-	go func() {
-		s.msg = fmt.Sprintf(italics, err.Error())
-		s.renderMsg()
-		defer func() {
-			s.msg = clearRow
-			s.renderMsg()
-		}()
+	s.queueErr(err.Error())
 
-		for i := range 6 {
-			if i%2 == 0 {
-				s.rounds.all[s.Round].animation = " "
-			} else {
-				s.rounds.all[s.Round].animation = ""
-			}
-			s.rewriteRow(s.Round+roundOffset, "")
-			s.renderRound()
-			time.Sleep(50 * time.Millisecond)
+	for i := range 6 {
+		if i%2 == 0 {
+			s.rounds.all[s.Round].animation = " "
+		} else {
+			s.rounds.all[s.Round].animation = ""
 		}
-		time.Sleep(1500 * time.Millisecond)
-	}()
+
+		s.rewriteRow(s.Round+roundOffset, "")
+		s.renderRound()
+		time.Sleep(50 * time.Millisecond)
+	}
 }
 
 func (s *screen) renderResult() {
@@ -175,5 +170,6 @@ func (s *screen) renderAll() {
 }
 
 func (s *screen) rewriteRow(row int, content string) {
-	fmt.Fprintf(s.Writer, moveTo, row, clearRow+content)
+	emptyRow := strings.Repeat(" ", 20) + "\r"
+	fmt.Fprintf(s.Writer, moveTo, row, emptyRow+content)
 }
