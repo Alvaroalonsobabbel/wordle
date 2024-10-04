@@ -57,7 +57,7 @@ func newTestScreen(w io.Writer, wordle *wordle.Status) *screen {
 		wordle,
 		newRounds(wordle),
 		NewKB(wordle),
-		newErrorLogger(w),
+		newErrorQueue(w),
 		w,
 		"",
 		"",

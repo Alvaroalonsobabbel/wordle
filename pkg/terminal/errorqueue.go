@@ -18,15 +18,17 @@ type err struct {
 }
 
 type errorQ struct {
-	queue []err
-	errCh chan err
-	w     io.Writer
+	queue   []err
+	errCh   chan err
+	timeOff time.Duration
+	w       io.Writer
 }
 
-func newErrorLogger(w io.Writer) *errorQ {
+func newErrorQueue(w io.Writer) *errorQ {
 	e := &errorQ{
-		errCh: make(chan err),
-		w:     w,
+		errCh:   make(chan err),
+		timeOff: errTimeoff,
+		w:       w,
 	}
 	go e.queueMgr()
 
@@ -53,7 +55,7 @@ func (e *errorQ) queueMgr() {
 }
 
 func (e *errorQ) timeErr(log err) {
-	time.Sleep(errTimeoff)
+	time.Sleep(e.timeOff)
 	log.rm = true
 	e.errCh <- log
 }
@@ -68,6 +70,6 @@ func (e *errorQ) displayErr() {
 	}
 
 	for i, log := range e.queue {
-		fmt.Fprintf(e.w, "\033[%d;22H\x1b[3m\x1b[30m\x1b[47m%s\x1b[0m", i+errOffset, log.message)
+		fmt.Fprintf(e.w, "\033[%d;22H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log.message)
 	}
 }
