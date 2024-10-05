@@ -105,17 +105,19 @@ func (s *screen) renderKBFlash(l byte) {
 func (s *screen) renderErr(err error) {
 	s.queueErr(err.Error())
 
-	for i := range 6 {
-		if i%2 == 0 {
-			s.rounds.all[s.Round].animation = " "
-		} else {
-			s.rounds.all[s.Round].animation = ""
-		}
+	go func() {
+		for i := range 6 {
+			if i%2 == 0 {
+				s.rounds.all[s.Round].animation = " "
+			} else {
+				s.rounds.all[s.Round].animation = ""
+			}
 
-		s.rewriteRow(s.Round+roundOffset, "")
-		s.renderRound()
-		time.Sleep(50 * time.Millisecond)
-	}
+			s.rewriteRow(s.Round+roundOffset, "")
+			s.renderRound()
+			time.Sleep(50 * time.Millisecond)
+		}
+	}()
 }
 
 func (s *screen) renderResult() {
