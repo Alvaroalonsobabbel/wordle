@@ -35,6 +35,7 @@ type terminal struct {
 
 func New(hardMode bool) *terminal { //nolint: revive
 	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	// wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
 	return &terminal{
 		reader: os.Stdin,
 		wordle: wordle,
