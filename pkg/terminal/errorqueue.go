@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	errTimeoff = 1500 * time.Millisecond
+	errExpTime = 1500 * time.Millisecond
 	errOffset  = 3
 )
 
@@ -20,14 +20,14 @@ type err struct {
 type errorQ struct {
 	queue   []err
 	errCh   chan err
-	timeOff time.Duration
+	expTime time.Duration
 	w       io.Writer
 }
 
 func newErrorQueue(w io.Writer) *errorQ {
 	e := &errorQ{
 		errCh:   make(chan err),
-		timeOff: errTimeoff,
+		expTime: errExpTime,
 		w:       w,
 	}
 	go e.queueMgr()
@@ -47,15 +47,15 @@ func (e *errorQ) queueMgr() {
 			}
 		default:
 			e.queue = append([]err{log}, e.queue...)
-			go e.timeErr(log)
+			go e.expireErr(log)
 		}
 
 		e.displayErr()
 	}
 }
 
-func (e *errorQ) timeErr(log err) {
-	time.Sleep(e.timeOff)
+func (e *errorQ) expireErr(log err) {
+	time.Sleep(e.expTime)
 	log.rm = true
 	e.errCh <- log
 }

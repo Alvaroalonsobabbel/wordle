@@ -12,7 +12,7 @@ import (
 func TestErrorQueue(t *testing.T) {
 	t.Run("errors are deleted from the queue after the timer expires", func(t *testing.T) {
 		errQ := newErrorQueue(io.Discard)
-		errQ.timeOff = 10 * time.Millisecond
+		errQ.expTime = 10 * time.Millisecond
 
 		errQ.queueErr("123")
 		assert.Equal(t, 1, len(errQ.queue))
@@ -24,7 +24,7 @@ func TestErrorQueue(t *testing.T) {
 	t.Run("displayErr prints the error queue after every update", func(t *testing.T) {
 		var buf bytes.Buffer
 		errQ := newErrorQueue(&buf)
-		errQ.timeOff = 10 * time.Millisecond
+		errQ.expTime = 10 * time.Millisecond
 
 		errQ.queueErr("123")
 		want := "\x1b[3;22H\x1b[K\x1b[4;22H\x1b[K\x1b[3;22H\x1b[3m\x1b[30m\x1b[47m 123 \x1b[0m"
