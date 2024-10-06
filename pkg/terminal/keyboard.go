@@ -24,18 +24,19 @@ func (kb *keyboard) string() string {
 	kb.mapRunes()
 
 	var (
-		firstRow  = []string{"Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P"}
-		secondRow = []string{"A", "S", "D", "F", "G", "H", "J", "K", "L"}
-		thirdRow  = []string{"↩︎", "Y", "X", "C", "V", "B", "N", "M", "←"}
+		firstRow  = []string{" Q ", " W ", " E ", " R ", " T ", " Z ", " U ", " I ", " O ", " P "}
+		secondRow = []string{" A ", " S ", " D ", " F ", " G ", " H ", " J ", " K ", " L "}
+		thirdRow  = []string{" ↩︎ ", " Y ", " X ", " C ", " V ", " B ", " N ", " M ", " ← "}
 	)
 
-	return "   " + kb.renderRow(firstRow) + newLine +
-		"    " + kb.renderRow(secondRow) + newLine +
-		"   " + kb.renderRow(thirdRow) + newLine
+	return " " + kb.renderRow(firstRow) + newLine +
+		"  " + kb.renderRow(secondRow) + newLine +
+		" " + kb.renderRow(thirdRow) + newLine
 }
 
 func (kb *keyboard) renderRow(row []string) string {
 	for i, v := range row {
+		v := strings.Trim(v, " ")
 		if v == kb.flash {
 			row[i] = fmt.Sprintf(flash, v)
 			continue
@@ -55,7 +56,7 @@ func (kb *keyboard) renderRow(row []string) string {
 		}
 	}
 
-	return strings.Join(row, " ")
+	return strings.Join(row, "")
 }
 
 func (kb *keyboard) mapRunes() {

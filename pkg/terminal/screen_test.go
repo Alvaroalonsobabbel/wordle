@@ -11,7 +11,7 @@ import (
 func TestRenderAll(t *testing.T) {
 	buffer, screen := newScreenTest()
 
-	want := "\x1b[H\x1b[2J\x1b[1m6 attempts to find a 5-letter word\n\x1b[0m\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\t_ _ _ _ _\n\r\n\r\n\r   Q W E R T Z U I O P\n\r    A S D F G H J K L\n\r   ↩︎ Y X C V B N M ←\n\r\n\r\n\r"
+	want := "\x1b[H\x1b[2J\x1b[1m6 attempts to find a 5-letter word\n\x1b[0m\n\r\t _  _  _  _  _ \n\r\t _  _  _  _  _ \n\r\t _  _  _  _  _ \n\r\t _  _  _  _  _ \n\r\t _  _  _  _  _ \n\r\t _  _  _  _  _ \n\r\n\r\n\r  Q  W  E  R  T  Z  U  I  O  P \n\r   A  S  D  F  G  H  J  K  L \n\r  ↩︎  Y  X  C  V  B  N  M  ← \n\r\n\r\n\r"
 	screen.renderAll()
 	assert.Equal(t, want, buffer.String())
 }
@@ -19,7 +19,7 @@ func TestRenderAll(t *testing.T) {
 func TestRenderRound(t *testing.T) {
 	buffer, screen := newScreenTest()
 
-	want := "\033[3;0H\tA _ _ _ _"
+	want := "\x1b[3;0H\t A  _  _  _  _ "
 	screen.add("A")
 	screen.renderRound()
 	assert.Equal(t, want, buffer.String())
@@ -28,7 +28,7 @@ func TestRenderRound(t *testing.T) {
 func TestRenderKB(t *testing.T) {
 	buffer, screen := newScreenTest()
 
-	want := "\033[11;0H   Q W E R T Z U I O P\n\r    A S D F G H J K L\n\r   ↩︎ Y X C V B N M ←\n\r"
+	want := "\x1b[11;0H  Q  W  E  R  T  Z  U  I  O  P \n\r   A  S  D  F  G  H  J  K  L \n\r  ↩︎  Y  X  C  V  B  N  M  ← \n\r"
 	screen.renderKB()
 	assert.Equal(t, want, buffer.String())
 }

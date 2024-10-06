@@ -58,8 +58,7 @@ func version(string) error {
 	return nil
 }
 
-func removeStatus(sss string) error {
-	fmt.Println(sss)
+func removeStatus(string) error {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return fmt.Errorf("error getting home directory: %v", err)
