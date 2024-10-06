@@ -24,9 +24,6 @@ func (kb *keyboard) string() string {
 	kb.mapRunes()
 
 	var (
-		// firstRow  = []string{"Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P"}
-		// secondRow = []string{"A", "S", "D", "F", "G", "H", "J", "K", "L"}
-		// thirdRow  = []string{"↩︎", "Y", "X", "C", "V", "B", "N", "M", "←"}
 		firstRow  = []string{" Q ", " W ", " E ", " R ", " T ", " Z ", " U ", " I ", " O ", " P "}
 		secondRow = []string{" A ", " S ", " D ", " F ", " G ", " H ", " J ", " K ", " L "}
 		thirdRow  = []string{" ↩︎ ", " Y ", " X ", " C ", " V ", " B ", " N ", " M ", " ← "}
