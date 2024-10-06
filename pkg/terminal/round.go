@@ -39,18 +39,21 @@ func (r *rounds) string(round int) string {
 				var color string
 				switch v {
 				case wordle.Correct:
-					color = green
+					color = greenBackground
 				case wordle.Present:
-					color = yellow
+					color = yellowBackground
 				case wordle.Absent:
-					color = black
+					color = greyBackground
 				}
 				str = append(str, fmt.Sprintf(color, string(k)))
 			}
 		}
-		p += strings.Join(str, " ")
+		p += strings.Join(str, "")
 	} else if r.w.Round < 6 {
-		p += r.all[round].animation + strings.Join(r.all[round].status, " ")
+		p += r.all[round].animation
+		for _, s := range r.all[round].status {
+			p += fmt.Sprintf(emptyChar, s)
+		}
 	}
 
 	return p

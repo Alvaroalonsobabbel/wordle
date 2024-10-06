@@ -12,7 +12,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-const VERSION = "v0.3.0"
+const VERSION = "v0.4.0"
 
 const (
 	// Relevant unicode characters to control the game.
@@ -35,7 +35,6 @@ type terminal struct {
 
 func New(hardMode bool) *terminal { //nolint: revive
 	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	// wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
 	return &terminal{
 		reader: os.Stdin,
 		wordle: wordle,

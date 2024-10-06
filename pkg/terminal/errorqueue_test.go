@@ -27,11 +27,11 @@ func TestErrorQueue(t *testing.T) {
 		errQ.expTime = 10 * time.Millisecond
 
 		errQ.queueErr("123")
-		want := "\x1b[3;22H\x1b[K\x1b[4;22H\x1b[K\x1b[3;22H\x1b[3m\x1b[30m\x1b[47m 123 \x1b[0m"
+		want := "\x1b[3;28H\x1b[K\x1b[4;28H\x1b[K\x1b[3;28H\x1b[3m\x1b[30m\x1b[47m 123 \x1b[0m"
 		assert.Equal(t, want, buf.String())
 		buf.Reset()
 		time.Sleep(15 * time.Millisecond)
-		want = "\x1b[3;22H\x1b[K"
+		want = "\x1b[3;28H\x1b[K"
 		assert.Equal(t, want, buf.String())
 	})
 }
