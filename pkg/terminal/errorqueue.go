@@ -66,10 +66,10 @@ func (e *errorQ) queueErr(message string) {
 
 func (e *errorQ) displayErr() {
 	for i := range len(e.queue) + 1 {
-		fmt.Fprintf(e.w, "\033[%d;22H\033[K", i+errOffset)
+		fmt.Fprintf(e.w, "\033[%d;28H\033[K", i+errOffset)
 	}
 
 	for i, log := range e.queue {
-		fmt.Fprintf(e.w, "\033[%d;22H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log.message)
+		fmt.Fprintf(e.w, "\033[%d;28H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log.message)
 	}
 }

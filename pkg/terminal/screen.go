@@ -18,15 +18,14 @@ const (
 	// Terminal formatting.
 	tab              = "\t"
 	newLine          = "\n\r"
-	green            = "\x1b[1m\x1b[32m%s\x1b[0m"
-	yellow           = "\x1b[1m\x1b[33m%s\x1b[0m"
-	black            = "\033[1m%s\033[0m"
-	greenBackground  = "\x1b[7m\x1b[32m%s\x1b[0m"
-	yellowBackground = "\x1b[7m\x1b[33m%s\x1b[0m"
-	greyBackground   = "\x1b[7m\x1b[90m%s\x1b[0m"
-	flash            = "\x1b[30m\x1b[47m%s\x1b[0m"
+	emptyChar        = " %s "
+	greenBackground  = "\x1b[7m\x1b[32m %s \x1b[0m"
+	yellowBackground = "\x1b[7m\x1b[33m %s \x1b[0m"
+	greyBackground   = "\x1b[7m\x1b[90m %s \x1b[0m"
+	flash            = "\x1b[30m\x1b[47m %s \x1b[0m"
 	italics          = "\x1b[3m%s\x1b[0m"
-	moveTo           = "\033[%d;0H%s"
+	moveToY          = "\033[%d;0H%s"
+	moveToYX         = "\033[%d;%dH%s"
 	clearRow         = "\033[K"
 	clearRowDown     = "\033[J"
 	clearScreen      = "\033[H\033[2J"
@@ -65,15 +64,15 @@ func newTestScreen(w io.Writer, wordle *wordle.Status) *screen {
 }
 
 func (s *screen) renderRound() {
-	fmt.Fprintf(s.Writer, moveTo, s.Round+roundOffset, s.rounds.string(s.Round))
+	fmt.Fprintf(s.Writer, moveToY, s.Round+roundOffset, s.rounds.string(s.Round))
 }
 
 func (s *screen) renderKB() {
-	fmt.Fprintf(s.Writer, moveTo, kbPos, s.keyboard.string())
+	fmt.Fprintf(s.Writer, moveToY, kbPos, s.keyboard.string())
 }
 
 func (s *screen) renderMsg() {
-	fmt.Fprintf(s.Writer, moveTo, msgPos, s.msg)
+	fmt.Fprintf(s.Writer, moveToY, msgPos, s.msg)
 }
 
 func (s *screen) renderPostGame() {
@@ -82,7 +81,7 @@ func (s *screen) renderPostGame() {
 		pg = clearRowDown + s.postGame + newLine + postGameMenu
 	}
 
-	fmt.Fprintf(s.Writer, moveTo, postGamePos, pg)
+	fmt.Fprintf(s.Writer, moveToY, postGamePos, pg)
 }
 
 func (s *screen) renderKBFlash(l byte) {
@@ -124,27 +123,25 @@ func (s *screen) renderResult() {
 	// this happens after wordle.Try increments the round counter
 	// that's why we run it with wordle.Round - 1
 	var (
-		r     = s.Round - 1
-		round = s.rounds.all[r].status
+		r                    = s.Round - 1
+		lineOffset           = 9
+		lineOffsetMultiplier = 3
 	)
 
 	for i, res := range s.Results[r] {
 		for k, v := range res {
-			color := black
+			color := greyBackground
 			switch v {
 			case wordle.Correct:
-				color = green
+				color = greenBackground
 			case wordle.Present:
-				color = yellow
+				color = yellowBackground
 			}
 
-			round[i] = "_"
-			s.rewriteRow(r+roundOffset, tab+strings.Join(round, " "))
-			time.Sleep(200 * time.Millisecond)
-			round[i] = fmt.Sprintf(color, string(k))
+			fmt.Fprintf(s.Writer, moveToYX, r+roundOffset, (i*lineOffsetMultiplier)+lineOffset, " _ ")
+			time.Sleep(250 * time.Millisecond)
+			fmt.Fprintf(s.Writer, moveToYX, r+roundOffset, (i*lineOffsetMultiplier)+lineOffset, fmt.Sprintf(color, string(k)))
 		}
-
-		s.rewriteRow(r+roundOffset, tab+strings.Join(round, " "))
 	}
 }
 
@@ -171,6 +168,6 @@ func (s *screen) renderAll() {
 }
 
 func (s *screen) rewriteRow(row int, content string) {
-	emptyRow := strings.Repeat(" ", 20) + "\r"
-	fmt.Fprintf(s.Writer, moveTo, row, emptyRow+content)
+	emptyRow := strings.Repeat(" ", 27) + "\r"
+	fmt.Fprintf(s.Writer, moveToY, row, emptyRow+content)
 }

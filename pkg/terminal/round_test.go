@@ -12,28 +12,28 @@ func TestRoundString(t *testing.T) {
 	rounds := newRounds(wordle)
 
 	t.Run("emtpy rounds", func(t *testing.T) {
-		want := "\t_ _ _ _ _"
+		want := "\t _  _  _  _  _ "
 		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("with one letter", func(t *testing.T) {
 		rounds.add("A")
-		want := "\tA _ _ _ _"
+		want := "\t A  _  _  _  _ "
 		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("with two letters and animations space", func(t *testing.T) {
 		rounds.add("A")
 		rounds.all[0].animation = " "
-		want := "\t A A _ _ _"
+		want := "\t  A  A  _  _  _ "
 		assert.Equal(t, want, rounds.string(0))
 	})
 
 	t.Run("after a round exist in wordle status it prints the status with color", func(t *testing.T) {
 		wordle.Try("SCORE") //nolint: errcheck
-		want := "\t\033[1mS\033[0m \x1b[1m\x1b[33mC\x1b[0m \x1b[1m\x1b[32mO\x1b[0m \x1b[1m\x1b[32mR\x1b[0m \x1b[1m\x1b[32mE\x1b[0m"
+		want := "\t\x1b[7m\x1b[90m S \x1b[0m\x1b[7m\x1b[33m C \x1b[0m\x1b[7m\x1b[32m O \x1b[0m\x1b[7m\x1b[32m R \x1b[0m\x1b[7m\x1b[32m E \x1b[0m"
 		assert.Equal(t, want, rounds.string(0))
-		want = "\t_ _ _ _ _"
+		want = "\t _  _  _  _  _ "
 		assert.Equal(t, want, rounds.string(1))
 	})
 }
