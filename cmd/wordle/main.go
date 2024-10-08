@@ -11,6 +11,8 @@ import (
 	"golang.org/x/term"
 )
 
+const VERSION = "v0.4.1"
+
 const (
 	hideCursor = "\033[?25l"
 	showCursor = "\033[?25h"
@@ -52,7 +54,7 @@ func evalOptions() {
 }
 
 func version(string) error {
-	fmt.Println(terminal.VERSION)
+	fmt.Println(VERSION)
 	os.Exit(0)
 
 	return nil

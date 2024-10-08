@@ -7,7 +7,7 @@ lint:
 	@golangci-lint run
 
 build: mod
-	@go build -o wordle
+	@go build -o wordle ./cmd/wordle
 
 mod:
 	@go mod download
