@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
@@ -25,33 +26,30 @@ const (
 type terminal struct {
 	wordle *wordle.Status
 	screen *screen
-	status *status
 	reader io.Reader
 
 	buf []byte
 }
 
-func New(hardMode bool) *terminal { //nolint: revive
-	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	return &terminal{
+func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
+	t := &terminal{
 		reader: os.Stdin,
-		wordle: wordle,
-		screen: newScreen(wordle),
-		status: newStatus(wordle),
 		buf:    make([]byte, 1),
 	}
+
+	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	if localStatus != nil && localStatus.Wordle == wordle.Wordle {
+		wordle = localStatus
+	}
+	t.wordle = wordle
+	t.screen = newScreen(wordle)
+	return t
 }
 
 func (t *terminal) Start() {
-	if err := t.status.loadGame(); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
 	defer func() {
 		t.screen.renderAll()
-		if err := t.status.saveGame(); err != nil {
+		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
 	}()
