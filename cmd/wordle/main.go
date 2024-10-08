@@ -11,7 +11,7 @@ import (
 	"golang.org/x/term"
 )
 
-const VERSION = "v0.4.2"
+const VERSION = "v0.4.3"
 
 const (
 	hideCursor = "\033[?25l"
