@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/atotto/clipboard"
 )
 
 const (
@@ -41,8 +41,10 @@ func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
 	if localStatus != nil && localStatus.Wordle == wordle.Wordle {
 		wordle = localStatus
 	}
+
 	t.wordle = wordle
 	t.screen = newScreen(wordle)
+
 	return t
 }
 
@@ -88,8 +90,8 @@ func (t *terminal) postGame() {
 
 		switch t.buf[0] {
 		case 's', 'S':
-			t.screen.postGame = t.wordle.Share()
-			t.screen.renderPostGame()
+			clipboard.WriteAll(t.wordle.Share()) //nolint: errcheck
+			t.screen.queueErr("Copied to Clipboard!")
 		case 'e', 'E':
 			return
 		}
@@ -104,13 +106,15 @@ func (t *terminal) processInput(b byte) {
 		t.screen.rounds.backspace()
 	case enter:
 		if t.screen.rounds.all[t.wordle.Round].index < 5 {
-			t.screen.renderErr(errors.New("Not enough letters")) //nolint: stylecheck
+			t.screen.queueErr("Not enough letters")
+			t.screen.shakeRound()
 			return
 		}
 
 		lastWord := strings.Join(t.screen.rounds.all[t.wordle.Round].status, "")
 		if err := t.wordle.Try(lastWord); err != nil {
-			t.screen.renderErr(err)
+			t.screen.queueErr(err.Error())
+			t.screen.shakeRound()
 			return
 		}
 

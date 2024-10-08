@@ -10,7 +10,7 @@ const (
 	absentSquare  = "⬜️"
 	correctSquare = "🟩"
 	presentSquare = "🟨"
-	newLine       = "\n\r"
+	newLine       = "\n"
 )
 
 func (s *Status) Share() string {

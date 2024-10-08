@@ -101,9 +101,7 @@ func (s *screen) renderKBFlash(l byte) {
 	s.renderKB()
 }
 
-func (s *screen) renderErr(err error) {
-	s.queueErr(err.Error())
-
+func (s *screen) shakeRound() {
 	go func() {
 		for i := range 6 {
 			if i%2 == 0 {
