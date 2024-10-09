@@ -3,6 +3,7 @@ module github.com/Alvaroalonsobabbel/wordle
 go 1.23.0
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/term v0.23.0
 )

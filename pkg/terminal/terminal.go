@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -9,10 +8,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/atotto/clipboard"
 )
-
-const VERSION = "v0.4.0"
 
 const (
 	// Relevant unicode characters to control the game.
@@ -27,33 +26,32 @@ const (
 type terminal struct {
 	wordle *wordle.Status
 	screen *screen
-	status *status
 	reader io.Reader
 
 	buf []byte
 }
 
-func New(hardMode bool) *terminal { //nolint: revive
-	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	return &terminal{
+func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
+	t := &terminal{
 		reader: os.Stdin,
-		wordle: wordle,
-		screen: newScreen(wordle),
-		status: newStatus(wordle),
 		buf:    make([]byte, 1),
 	}
+
+	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	if localStatus != nil && localStatus.Wordle == wordle.Wordle {
+		wordle = localStatus
+	}
+
+	t.wordle = wordle
+	t.screen = newScreen(wordle)
+
+	return t
 }
 
 func (t *terminal) Start() {
-	if err := t.status.loadGame(); err != nil {
-		fmt.Println(err)
-
-		return
-	}
-
 	defer func() {
 		t.screen.renderAll()
-		if err := t.status.saveGame(); err != nil {
+		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
 	}()
@@ -92,8 +90,8 @@ func (t *terminal) postGame() {
 
 		switch t.buf[0] {
 		case 's', 'S':
-			t.screen.postGame = t.wordle.Share()
-			t.screen.renderPostGame()
+			clipboard.WriteAll(t.wordle.Share()) //nolint: errcheck
+			t.screen.queueErr("Copied to Clipboard!")
 		case 'e', 'E':
 			return
 		}
@@ -108,13 +106,15 @@ func (t *terminal) processInput(b byte) {
 		t.screen.rounds.backspace()
 	case enter:
 		if t.screen.rounds.all[t.wordle.Round].index < 5 {
-			t.screen.renderErr(errors.New("Not enough letters")) //nolint: stylecheck
+			t.screen.queueErr("Not enough letters")
+			t.screen.shakeRound()
 			return
 		}
 
 		lastWord := strings.Join(t.screen.rounds.all[t.wordle.Round].status, "")
 		if err := t.wordle.Try(lastWord); err != nil {
-			t.screen.renderErr(err)
+			t.screen.queueErr(err.Error())
+			t.screen.shakeRound()
 			return
 		}
 
