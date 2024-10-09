@@ -35,7 +35,7 @@ jobs:
       - name: Read Version
         id: read_version
         run: |
-          VERSION=$(go run . -version)
+          VERSION=$(go run ./cmd/wordle/main.go -version)
           echo "Version: $VERSION"
           echo "::set-output name=version::$VERSION"
 
