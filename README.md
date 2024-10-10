@@ -4,7 +4,7 @@
 
 Play the NYT daily Wordle from the comfort of your terminal!
 
-<img src="doc/example.gif" alt="drawing" width="282"/>
+<img src="doc/example.gif" alt="drawing" width="450"/>
 
 ⚠️ this assumes you know how to use the terminal! If you don't you can find out how [here](https://www.google.com/search?q=how+to+use+the+terminal).
 
