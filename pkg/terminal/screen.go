@@ -43,7 +43,7 @@ type screen struct {
 	*keyboard
 	*errorQ
 	io.Writer
-	msg      string
+	// msg      string
 	postGame string
 }
 
@@ -59,7 +59,6 @@ func newTestScreen(w io.Writer, wordle *wordle.Status) *screen {
 		newErrorQueue(w),
 		w,
 		"",
-		"",
 	}
 }
 
@@ -71,8 +70,8 @@ func (s *screen) renderKB() {
 	fmt.Fprintf(s.Writer, moveToY, kbPos, s.keyboard.string())
 }
 
-func (s *screen) renderMsg() {
-	fmt.Fprintf(s.Writer, moveToY, msgPos, s.msg)
+func (s *screen) renderMsg(msg string) {
+	fmt.Fprintf(s.Writer, moveToY, msgPos, msg)
 }
 
 func (s *screen) renderPostGame() {
@@ -156,7 +155,6 @@ func (s *screen) renderAll() {
 		strings.Join(r, newLine),
 		newLine,
 		newLine,
-		s.msg,
 		newLine,
 		s.keyboard.string(),
 		newLine,

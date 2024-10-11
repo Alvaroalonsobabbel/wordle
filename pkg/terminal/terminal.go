@@ -27,15 +27,10 @@ type terminal struct {
 	wordle *wordle.Status
 	screen *screen
 	reader io.Reader
-
-	buf []byte
 }
 
 func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
-	t := &terminal{
-		reader: os.Stdin,
-		buf:    make([]byte, 1),
-	}
+	t := &terminal{reader: os.Stdin}
 
 	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
 	if localStatus != nil && localStatus.Wordle == wordle.Wordle {
@@ -50,7 +45,7 @@ func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
 
 func (t *terminal) Start() {
 	defer func() {
-		t.screen.renderAll()
+		fmt.Fprint(t.screen.Writer, newLine)
 		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
@@ -65,30 +60,32 @@ func (t *terminal) game() {
 	for {
 		ok, msg := t.wordle.Finish()
 		if ok {
-			t.screen.msg = fmt.Sprintf(italics, msg)
-			t.screen.renderMsg()
-			t.postGame()
+			t.screen.renderMsg(fmt.Sprintf(italics, msg))
 
 			break
 		}
 
-		if quit := t.read(); quit {
-			break
+		buf, quit := t.read()
+		if quit {
+			return
 		}
 
-		t.processInput(t.buf[0])
+		t.processInput(buf[0])
 	}
+
+	t.postGame()
 }
 
 func (t *terminal) postGame() {
 	t.screen.renderPostGame()
 
 	for {
-		if quit := t.read(); quit {
+		buf, quit := t.read()
+		if quit {
 			return
 		}
 
-		switch t.buf[0] {
+		switch buf[0] {
 		case 's', 'S':
 			clipboard.WriteAll(t.wordle.Share()) //nolint: errcheck
 			t.screen.queueErr("Copied to Clipboard!")
@@ -129,15 +126,16 @@ func (t *terminal) processInput(b byte) {
 	t.screen.renderRound()
 }
 
-func (t *terminal) read() bool {
-	if _, err := t.reader.Read(t.buf); err != nil {
+func (t *terminal) read() ([]byte, bool) {
+	buf := make([]byte, 1)
+	if _, err := t.reader.Read(buf); err != nil {
 		log.Fatalf("Error reading input: %v", err)
 	}
 
 	// Ctrl-C exits the game
-	if t.buf[0] == ctrlC {
-		return true
+	if buf[0] == ctrlC {
+		return nil, true
 	}
 
-	return false
+	return buf, false
 }

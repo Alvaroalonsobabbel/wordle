@@ -37,8 +37,7 @@ func TestRenderMsg(t *testing.T) {
 	buffer, screen := newScreenTest()
 
 	want := "\033[10;0HMESSAGE"
-	screen.msg = "MESSAGE"
-	screen.renderMsg()
+	screen.renderMsg("MESSAGE")
 	assert.Equal(t, want, buffer.String())
 }
 
