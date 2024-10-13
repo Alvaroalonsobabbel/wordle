@@ -21,46 +21,56 @@ const (
 
 	// Accepted characters regex.
 	okRegex = `^[A-Z]$`
+
+	title            = "\033[H\033[2J\033[1m6 attempts to find a 5-letter word\n\033[0m"
+	postGameMenu     = "\033[15;0H(s)hare (e)xit"
+	message          = "\033[10;0H\x1b[3m%s\x1b[0m"
+	greenBackground  = "\x1b[7m\x1b[32m %s \x1b[0m"
+	yellowBackground = "\x1b[7m\x1b[33m %s \x1b[0m"
+	greyBackground   = "\x1b[7m\x1b[90m %s \x1b[0m"
+	emptyChar        = " %s "
 )
 
 type terminal struct {
-	wordle *wordle.Status
-	screen *screen
-	reader io.Reader
+	wordle   *wordle.Status
+	keyboard *keyboard
+	round    *round
+	render   *render
+	reader   io.Reader
 }
 
-func New(hardMode bool, localStatus *wordle.Status) *terminal { //nolint: revive
+func New(hardMode bool, localStatus *wordle.Status) (*terminal, func()) { //nolint: revive
 	t := &terminal{reader: os.Stdin}
 
-	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	if localStatus != nil && localStatus.Wordle == wordle.Wordle {
-		wordle = localStatus
+	t.wordle = wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	if localStatus != nil && localStatus.Wordle == t.wordle.Wordle {
+		t.wordle = localStatus
 	}
 
-	t.wordle = wordle
-	t.screen = newScreen(wordle)
+	r, c := newRender(os.Stdout)
+	t.render = r
+	t.round = newRound(t.wordle, t.render)
+	t.keyboard = newKeyboard(t.wordle, t.render)
 
-	return t
+	return t, c
 }
 
 func (t *terminal) Start() {
 	defer func() {
-		fmt.Fprint(t.screen.Writer, newLine)
 		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
 	}()
 
+	t.initialScreen()
 	t.game()
 }
 
 func (t *terminal) game() {
-	t.screen.renderAll()
-
 	for {
 		ok, msg := t.wordle.Finish()
 		if ok {
-			t.screen.renderMsg(fmt.Sprintf(italics, msg))
+			t.render.string(fmt.Sprintf(message, msg))
 
 			break
 		}
@@ -77,7 +87,7 @@ func (t *terminal) game() {
 }
 
 func (t *terminal) postGame() {
-	t.screen.renderPostGame()
+	t.render.string(postGameMenu)
 
 	for {
 		buf, quit := t.read()
@@ -88,7 +98,7 @@ func (t *terminal) postGame() {
 		switch buf[0] {
 		case 's', 'S':
 			clipboard.WriteAll(t.wordle.Share()) //nolint: errcheck
-			t.screen.queueErr("Copied to Clipboard!")
+			t.render.err("Copied to Clipboard!")
 		case 'e', 'E':
 			return
 		}
@@ -96,34 +106,33 @@ func (t *terminal) postGame() {
 }
 
 func (t *terminal) processInput(b byte) {
-	t.screen.renderKBFlash(b)
+	t.keyboard.flash(b)
 
 	switch b {
 	case backspace:
-		t.screen.rounds.backspace()
+		t.round.backspace()
 	case enter:
-		if t.screen.rounds.all[t.wordle.Round].index < 5 {
-			t.screen.queueErr("Not enough letters")
-			t.screen.shakeRound()
+		if t.round.index < 5 {
+			t.render.err("Not enough letters")
+			t.round.shake()
 			return
 		}
 
-		lastWord := strings.Join(t.screen.rounds.all[t.wordle.Round].status, "")
+		lastWord := strings.Join(t.round.status, "")
 		if err := t.wordle.Try(lastWord); err != nil {
-			t.screen.queueErr(err.Error())
-			t.screen.shakeRound()
+			t.render.err(err.Error())
+			t.round.shake()
 			return
 		}
 
-		t.screen.renderResult()
-		t.screen.renderKB()
+		t.round.renderResult()
+		t.keyboard.print()
 	default:
-		if regexp.MustCompile(okRegex).MatchString(strings.ToUpper(string(b))) {
-			t.screen.rounds.add(string(b))
+		c := strings.ToUpper(string(b))
+		if regexp.MustCompile(okRegex).MatchString(c) {
+			t.round.add(c)
 		}
 	}
-
-	t.screen.renderRound()
 }
 
 func (t *terminal) read() ([]byte, bool) {
@@ -138,4 +147,13 @@ func (t *terminal) read() ([]byte, bool) {
 	}
 
 	return buf, false
+}
+
+func (t *terminal) initialScreen() {
+	t.render.string(title)
+	t.keyboard.print()
+
+	for i := range 6 {
+		t.round.print(i)
+	}
 }

@@ -45,10 +45,13 @@ func TestRead(t *testing.T) {
 }
 
 func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
+	render, _ := newRender(w)
 	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
 	return &terminal{
-		reader: r,
-		wordle: wordle,
-		screen: newTestScreen(w, wordle),
+		reader:   r,
+		render:   render,
+		wordle:   wordle,
+		keyboard: newKeyboard(wordle, render),
+		round:    newRound(wordle, render),
 	}
 }
