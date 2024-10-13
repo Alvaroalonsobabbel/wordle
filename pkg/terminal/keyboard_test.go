@@ -1,6 +1,8 @@
 package terminal
 
 import (
+	"bytes"
+	"io"
 	"testing"
 
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
@@ -8,25 +10,35 @@ import (
 )
 
 func TestKeyboardString(t *testing.T) {
-	wordle := wordle.NewGame(wordle.WithCustomWord("CHAIR"))
-	kb := NewKB(wordle)
+	w := wordle.NewGame(wordle.WithCustomWord("CHAIR"))
+	buf := &bytes.Buffer{}
+	r, _ := newRender(buf)
+	kb := newKeyboard(w, r)
 
 	t.Run("game with no rounds return a basic keyboard", func(t *testing.T) {
-		expected := "  Q  W  E  R  T  Z  U  I  O  P \n\r   A  S  D  F  G  H  J  K  L \n\r  ↩︎  Y  X  C  V  B  N  M  ← \n\r"
-		assert.Equal(t, expected, kb.string())
+		kb.print()
+		r.wg.Wait()
+
+		want := "\x1b[11;2H Q  W  E  R  T  Z  U  I  O  P \x1b[12;3H A  S  D  F  G  H  J  K  L \x1b[13;2H ↩︎  Y  X  C  V  B  N  M  ← "
+		assert.Equal(t, want, buf.String())
 	})
 
 	t.Run("game with 1 round highlight the used letters", func(t *testing.T) {
-		wordle.Try("HELLO") //nolint: errcheck
-		expected := "  Q  W \x1b[7m\x1b[90m E \x1b[0m R  T  Z  U  I \x1b[7m\x1b[90m O \x1b[0m P \n\r   A  S  D  F  G \x1b[7m\x1b[33m H \x1b[0m J  K \x1b[7m\x1b[90m L \x1b[0m\n\r  ↩︎  Y  X  C  V  B  N  M  ← \n\r"
-		assert.Equal(t, expected, kb.string())
+		w.Try("HELLO") //nolint: errcheck
+		buf.Reset()
+		kb.print()
+		r.wg.Wait()
+
+		want := "\x1b[11;2H Q  W \x1b[7m\x1b[90m E \x1b[0m R  T  Z  U  I \x1b[7m\x1b[90m O \x1b[0m P \x1b[12;3H A  S  D  F  G \x1b[7m\x1b[33m H \x1b[0m J  K \x1b[7m\x1b[90m L \x1b[0m\x1b[13;2H ↩︎  Y  X  C  V  B  N  M  ← "
+		assert.Equal(t, want, buf.String())
 	})
 }
 
 func TestMapRunes(t *testing.T) {
 	var (
 		w     = wordle.NewGame(wordle.WithCustomWord("CHAIR"))
-		kb    = NewKB(w)
+		r, _  = newRender(io.Discard)
+		kb    = newKeyboard(w, r)
 		tests = []struct {
 			word string
 			want map[rune]int
