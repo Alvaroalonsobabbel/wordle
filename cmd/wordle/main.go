@@ -11,11 +11,11 @@ import (
 	"golang.org/x/term"
 )
 
-const VERSION = "v0.4.3"
+const VERSION = "v0.4.4"
 
 const (
 	hideCursor = "\033[?25l"
-	showCursor = "\033[?25h"
+	showCursor = "\033[13;0H\n\r\033[?25h"
 
 	// Flags.
 	hardModeFlag     = "hard"
@@ -38,18 +38,21 @@ func main() {
 	restoreConsole := startRawConsole()
 	defer restoreConsole()
 
-	terminal.New(hardMode, status).Start()
+	terminal, closer := terminal.New(hardMode, status)
+	defer closer()
+
+	terminal.Start()
 }
 
 func startRawConsole() func() {
 	fmt.Print(hideCursor)
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd())) //nolint: gosec
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		log.Fatalf("Error setting terminal to raw mode: %v", err)
 	}
 
 	return func() {
-		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil { //nolint: gosec
+		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
 			log.Fatalf("unable to retore the terminal original state: %v", err)
 		}
 		fmt.Print(showCursor)

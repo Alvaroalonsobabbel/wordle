@@ -34,7 +34,7 @@ func TestRead(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			mockReader.data = test.input
-			exit := terminal.read()
+			_, exit := terminal.read()
 			if test.wantExit {
 				assert.True(t, exit)
 			} else {
@@ -45,11 +45,13 @@ func TestRead(t *testing.T) {
 }
 
 func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
+	render, _ := newRender(w)
 	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
 	return &terminal{
-		reader: r,
-		wordle: wordle,
-		screen: newTestScreen(w, wordle),
-		buf:    make([]byte, 1),
+		reader:   r,
+		render:   render,
+		wordle:   wordle,
+		keyboard: newKeyboard(wordle, render),
+		round:    newRound(wordle, render),
 	}
 }
