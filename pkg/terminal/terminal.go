@@ -55,7 +55,7 @@ func New(w *wordle.Status) *terminal { //nolint: revive
 }
 
 func (t *terminal) Start() {
-	restoreConsole := t.startRawConsole()
+	restoreConsole := startRawConsole()
 
 	defer func() {
 		t.render.close()
@@ -161,7 +161,7 @@ func (t *terminal) initialScreen() {
 	}
 }
 
-func (t *terminal) startRawConsole() func() {
+func startRawConsole() func() {
 	fmt.Print(hideCursor)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
