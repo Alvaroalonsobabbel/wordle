@@ -44,10 +44,7 @@ func main() {
 	restoreConsole := startRawConsole()
 	defer restoreConsole()
 
-	terminal, closer := terminal.New(wordle)
-	defer closer()
-
-	terminal.Start()
+	terminal.New(wordle).Start()
 }
 
 func startRawConsole() func() {

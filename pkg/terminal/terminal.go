@@ -39,8 +39,8 @@ type terminal struct {
 	reader   io.Reader
 }
 
-func New(w *wordle.Status) (*terminal, func()) { //nolint: revive
-	r, c := newRender(os.Stdout)
+func New(w *wordle.Status) *terminal { //nolint: revive
+	r := newRender(os.Stdout)
 
 	return &terminal{
 		reader:   os.Stdin,
@@ -48,11 +48,12 @@ func New(w *wordle.Status) (*terminal, func()) { //nolint: revive
 		render:   r,
 		round:    newRound(w, r),
 		keyboard: newKeyboard(w, r),
-	}, c
+	}
 }
 
 func (t *terminal) Start() {
 	defer func() {
+		t.render.close()
 		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
