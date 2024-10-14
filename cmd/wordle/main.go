@@ -8,16 +8,12 @@ import (
 
 	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/terminal"
-	"golang.org/x/term"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 )
 
-const VERSION = "v0.4.4"
+const VERSION = "v0.4.5"
 
 const (
-	hideCursor = "\033[?25l"
-	showCursor = "\033[13;0H\n\r\033[?25h"
-
-	// Flags.
 	hardModeFlag     = "hard"
 	versionFlag      = "version"
 	removeStatusFlag = "rmstatus"
@@ -35,28 +31,12 @@ func main() {
 		return
 	}
 
-	restoreConsole := startRawConsole()
-	defer restoreConsole()
-
-	terminal, closer := terminal.New(hardMode, status)
-	defer closer()
-
-	terminal.Start()
-}
-
-func startRawConsole() func() {
-	fmt.Print(hideCursor)
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		log.Fatalf("Error setting terminal to raw mode: %v", err)
+	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	if status != nil && status.Wordle == wordle.Wordle {
+		wordle = status
 	}
 
-	return func() {
-		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
-			log.Fatalf("unable to retore the terminal original state: %v", err)
-		}
-		fmt.Print(showCursor)
-	}
+	terminal.New(wordle).Start()
 }
 
 func evalOptions() {

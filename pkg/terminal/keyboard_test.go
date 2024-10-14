@@ -12,7 +12,7 @@ import (
 func TestKeyboardString(t *testing.T) {
 	w := wordle.NewGame(wordle.WithCustomWord("CHAIR"))
 	buf := &bytes.Buffer{}
-	r, _ := newRender(buf)
+	r := newRender(buf)
 	kb := newKeyboard(w, r)
 
 	t.Run("game with no rounds return a basic keyboard", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestKeyboardString(t *testing.T) {
 func TestMapRunes(t *testing.T) {
 	var (
 		w     = wordle.NewGame(wordle.WithCustomWord("CHAIR"))
-		r, _  = newRender(io.Discard)
+		r     = newRender(io.Discard)
 		kb    = newKeyboard(w, r)
 		tests = []struct {
 			word string

@@ -25,7 +25,7 @@ type render struct {
 	wg    sync.WaitGroup
 }
 
-func newRender(w io.Writer) (*render, func()) {
+func newRender(w io.Writer) *render {
 	r := &render{
 		errCh: make(chan err),
 		strCh: make(chan string),
@@ -35,11 +35,7 @@ func newRender(w io.Writer) (*render, func()) {
 	go r.errMgr()
 	go r.strMgr()
 
-	return r, func() {
-		r.wg.Wait()
-		close(r.errCh)
-		close(r.strCh)
-	}
+	return r
 }
 
 func (r *render) strMgr() {
@@ -90,4 +86,10 @@ func (r *render) printQ(q []err) {
 	for i, log := range q {
 		fmt.Fprintf(r.w, "\033[%d;28H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log.msg)
 	}
+}
+
+func (r *render) close() {
+	r.wg.Wait()
+	close(r.errCh)
+	close(r.strCh)
 }

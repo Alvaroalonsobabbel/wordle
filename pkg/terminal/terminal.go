@@ -11,6 +11,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 	"github.com/atotto/clipboard"
+	"golang.org/x/term"
 )
 
 const (
@@ -28,6 +29,8 @@ const (
 	greenBackground  = "\x1b[7m\x1b[32m %s \x1b[0m"
 	yellowBackground = "\x1b[7m\x1b[33m %s \x1b[0m"
 	greyBackground   = "\x1b[7m\x1b[90m %s \x1b[0m"
+	hideCursor       = "\033[?25l"
+	showCursor       = "\033[13;0H\n\r\033[?25h"
 	emptyChar        = " %s "
 )
 
@@ -39,24 +42,24 @@ type terminal struct {
 	reader   io.Reader
 }
 
-func New(hardMode bool, localStatus *wordle.Status) (*terminal, func()) { //nolint: revive
-	t := &terminal{reader: os.Stdin}
+func New(w *wordle.Status) *terminal { //nolint: revive
+	r := newRender(os.Stdout)
 
-	t.wordle = wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	if localStatus != nil && localStatus.Wordle == t.wordle.Wordle {
-		t.wordle = localStatus
+	return &terminal{
+		reader:   os.Stdin,
+		wordle:   w,
+		render:   r,
+		round:    newRound(w, r),
+		keyboard: newKeyboard(w, r),
 	}
-
-	r, c := newRender(os.Stdout)
-	t.render = r
-	t.round = newRound(t.wordle, t.render)
-	t.keyboard = newKeyboard(t.wordle, t.render)
-
-	return t, c
 }
 
 func (t *terminal) Start() {
+	restoreConsole := startRawConsole()
+
 	defer func() {
+		t.render.close()
+		restoreConsole()
 		if err := status.Game().Save(t.wordle); err != nil {
 			fmt.Println(err)
 		}
@@ -155,5 +158,20 @@ func (t *terminal) initialScreen() {
 
 	for i := range 6 {
 		t.round.print(i)
+	}
+}
+
+func startRawConsole() func() {
+	fmt.Print(hideCursor)
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		log.Fatalf("Error setting terminal to raw mode: %v", err)
+	}
+
+	return func() {
+		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
+			log.Fatalf("unable to retore the terminal original state: %v", err)
+		}
+		fmt.Print(showCursor)
 	}
 }
