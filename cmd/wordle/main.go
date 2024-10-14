@@ -8,6 +8,7 @@ import (
 
 	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
 	"github.com/Alvaroalonsobabbel/wordle/pkg/terminal"
+	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
 	"golang.org/x/term"
 )
 
@@ -35,10 +36,15 @@ func main() {
 		return
 	}
 
+	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
+	if status != nil && status.Wordle == wordle.Wordle {
+		wordle = status
+	}
+
 	restoreConsole := startRawConsole()
 	defer restoreConsole()
 
-	terminal, closer := terminal.New(hardMode, status)
+	terminal, closer := terminal.New(wordle)
 	defer closer()
 
 	terminal.Start()

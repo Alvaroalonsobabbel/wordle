@@ -39,20 +39,16 @@ type terminal struct {
 	reader   io.Reader
 }
 
-func New(hardMode bool, localStatus *wordle.Status) (*terminal, func()) { //nolint: revive
-	t := &terminal{reader: os.Stdin}
-
-	t.wordle = wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	if localStatus != nil && localStatus.Wordle == t.wordle.Wordle {
-		t.wordle = localStatus
-	}
-
+func New(w *wordle.Status) (*terminal, func()) { //nolint: revive
 	r, c := newRender(os.Stdout)
-	t.render = r
-	t.round = newRound(t.wordle, t.render)
-	t.keyboard = newKeyboard(t.wordle, t.render)
 
-	return t, c
+	return &terminal{
+		reader:   os.Stdin,
+		wordle:   w,
+		render:   r,
+		round:    newRound(w, r),
+		keyboard: newKeyboard(w, r),
+	}, c
 }
 
 func (t *terminal) Start() {
