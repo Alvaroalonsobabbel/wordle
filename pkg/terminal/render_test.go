@@ -26,7 +26,7 @@ func TestRender(t *testing.T) {
 		render := newRender(buf)
 
 		render.string("123")
-		// render.wg.Wait()
+		render.wg.Wait()
 		assert.Equal(t, "123", buf.String())
 	})
 }
