@@ -12,7 +12,7 @@ func TestRender(t *testing.T) {
 	t.Run("prints formatted err to w and clears error after", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		render := newRender(buf)
-		render.dur = 10 * time.Millisecond
+		render.errDur = 10 * time.Millisecond
 
 		render.err("123")
 		render.wg.Wait()
