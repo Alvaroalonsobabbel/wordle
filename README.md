@@ -12,7 +12,7 @@ Play the NYT daily Wordle from the comfort of your terminal!
 
 For Apple computers with ARM chips you can use the provided installer. For any other OS you'll have to compile the binary yourself.
 
-### ARM (Apple Sillicon)
+### ARM (Apple Silicon)
 
 Open the terminal and run:
 

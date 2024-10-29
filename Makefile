@@ -8,6 +8,7 @@ lint:
 
 build: mod
 	@go build -o wordle ./cmd/wordle
+	chmod +x wordle
 
 mod:
 	@go mod download
