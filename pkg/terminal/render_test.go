@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"bytes"
+	"io"
 	"testing"
 	"time"
 
@@ -9,6 +10,21 @@ import (
 )
 
 func TestRender(t *testing.T) {
+	t.Run("errors are queued and removed from the queue after errDur", func(t *testing.T) {
+		render := newRender(io.Discard)
+		render.errDur = 10 * time.Millisecond
+
+		for range 5 {
+			render.err("123")
+		}
+
+		time.Sleep(5 + time.Millisecond)
+		assert.Equal(t, 5, len(render.errQ))
+
+		render.wg.Wait()
+		assert.Equal(t, 0, len(render.errQ))
+	})
+
 	t.Run("prints formatted err to w and clears error after", func(t *testing.T) {
 		buf := &bytes.Buffer{}
 		render := newRender(buf)
