@@ -25,18 +25,14 @@ jobs:
       - name: Check out code into the Go module directory
         uses: actions/checkout@v3
 
-      - name: Get dependencies
-        run: go mod download
-
       - name: Build
         run: |
           GOOS=darwin GOARCH=arm64 make build
-          chmod +x wordle
 
       - name: Read Version
         id: read_version
         run: |
-          VERSION=$(go run ./cmd/wordle/main.go -version)
+          VERSION=$(go run main.go -version)
           echo "Version: $VERSION"
           echo "::set-output name=version::$VERSION"
 
@@ -46,6 +42,6 @@ jobs:
           tag_name: ${{ steps.read_version.outputs.version }}
           name: Terminal Wordle ${{ steps.read_version.outputs.version }}
           generate_release_notes: true
-          files: wordle
+          files: bin/wordle
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -28,7 +28,7 @@ curl -sSL https://raw.githubusercontent.com/Alvaroalonsobabbel/wordle/main/bin/i
 1. [Install Go](https://go.dev/doc/install)
 2. Clone the repo `git clone git@github.com:Alvaroalonsobabbel/wordle.git`
 3. CD into the repo `cd wordle`
-4. Build the binary `make build`
+4. Run the program `make run`
 
 ## How to Play
 
