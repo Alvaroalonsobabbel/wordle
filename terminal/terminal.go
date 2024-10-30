@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
-	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/status"
+	"github.com/Alvaroalonsobabbel/wordle/wordle"
 	"github.com/atotto/clipboard"
 	"golang.org/x/term"
 )

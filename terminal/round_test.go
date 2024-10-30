@@ -5,7 +5,7 @@ import (
 	"io"
 	"testing"
 
-	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/wordle"
 	"github.com/stretchr/testify/assert"
 )
 
