@@ -6,9 +6,12 @@ test:
 lint:
 	@golangci-lint run
 
+run: mod
+	@go run main.go
+
 build: mod
-	@go build -o wordle
-	chmod +x wordle
+	@CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o ./bin/wordle
+	@chmod +x ./bin/wordle
 
 mod:
 	@go mod download
