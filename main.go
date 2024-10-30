@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/Alvaroalonsobabbel/wordle/pkg/status"
-	"github.com/Alvaroalonsobabbel/wordle/pkg/terminal"
-	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/status"
+	"github.com/Alvaroalonsobabbel/wordle/terminal"
+	"github.com/Alvaroalonsobabbel/wordle/wordle"
 )
 
 const VERSION = "v0.4.5"

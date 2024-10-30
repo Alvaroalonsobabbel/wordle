@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Alvaroalonsobabbel/wordle/pkg/wordle"
+	"github.com/Alvaroalonsobabbel/wordle/wordle"
 )
 
 const (
