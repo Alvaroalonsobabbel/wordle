@@ -115,68 +115,24 @@ func TestTry(t *testing.T) {
 func TestFinish(t *testing.T) {
 	t.Run("finish returns false while game is running", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-		err := wordle.Try("WORLD")
-		assert.NoError(t, err)
-
-		ok, msg := wordle.Finish()
-		assert.False(t, ok)
-		assert.Empty(t, msg)
+		assert.NoError(t, wordle.Try("WORLD"))
+		assert.False(t, wordle.Finish())
 	})
 
 	t.Run("finish returns true if game ends due to win", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-		err := wordle.Try("WORLD")
-		assert.NoError(t, err)
-
-		ok, msg := wordle.Finish()
-		assert.False(t, ok)
-		assert.Empty(t, msg)
-
-		err = wordle.Try("HELLO")
-		assert.NoError(t, err)
-
-		ok, _ = wordle.Finish()
-		assert.True(t, ok)
+		assert.NoError(t, wordle.Try("WORLD"))
+		assert.False(t, wordle.Finish())
+		assert.NoError(t, wordle.Try("HELLO"))
+		assert.True(t, wordle.Finish())
 	})
 
-	t.Run("finishing messages", func(t *testing.T) {
-		tests := []struct {
-			misses      int
-			expectedMsg string
-		}{
-			{0, "Genius"},
-			{1, "Magnificent"},
-			{2, "Impressive"},
-			{3, "Splendid"},
-			{4, "Great"},
-			{5, "Phew!"},
-		}
-
-		for _, test := range tests {
-			wordle := NewGame(WithCustomWord("HELLO"))
-			for range test.misses {
-				err := wordle.Try("CHAIR")
-				assert.NoError(t, err)
-			}
-			err := wordle.Try("HELLO")
-			assert.NoError(t, err)
-
-			ok, msg := wordle.Finish()
-			assert.True(t, ok)
-			assert.Equal(t, test.expectedMsg, msg)
-		}
-	})
-
-	t.Run("finish returns true if game ends due to lose and msg is current wordle", func(t *testing.T) {
+	t.Run("finish returns true if game ends due to lose", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-
 		for range 6 {
-			wordle.Try("WORLD") //nolint: errcheck
+			assert.NoError(t, wordle.Try("WORLD"))
 		}
-
-		ok, msg := wordle.Finish()
-		assert.True(t, ok)
-		assert.Equal(t, "HELLO", msg)
+		assert.True(t, wordle.Finish())
 	})
 }
 

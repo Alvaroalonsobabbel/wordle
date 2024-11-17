@@ -27,14 +27,6 @@ var (
 	answersList string
 
 	ordinalNumbers = []string{"1st", "2nd", "3rd", "4th", "5th"}
-	finishMessage  = map[int]string{
-		1: "Genius",
-		2: "Magnificent",
-		3: "Impressive",
-		4: "Splendid",
-		5: "Great",
-		6: "Phew!",
-	}
 )
 
 type Status struct {
@@ -74,16 +66,8 @@ func (s *Status) Try(word string) error {
 	return nil
 }
 
-func (s *Status) Finish() (bool, string) {
-	if string(s.Discovered[:]) == s.Wordle {
-		return true, finishMessage[s.Round]
-	}
-
-	if s.Round > 5 {
-		return true, s.Wordle
-	}
-
-	return false, ""
+func (s *Status) Finish() bool {
+	return string(s.Discovered[:]) == s.Wordle || s.Round > 5
 }
 
 func (s *Status) hardModeCheck(word string) error {
