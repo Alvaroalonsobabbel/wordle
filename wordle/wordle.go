@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -159,7 +158,7 @@ func maxHints(wordle string) map[rune]int {
 	return hintMap
 }
 
-func fetchTodaysWordle(c *http.Client) (string, int) {
+func fetchTodaysWordle(c *http.Client) (string, int, error) {
 	var (
 		url = wordleBaseURL + time.Now().Format("2006-01-02") + ".json"
 		r   = struct {
@@ -168,14 +167,17 @@ func fetchTodaysWordle(c *http.Client) (string, int) {
 		}{}
 	)
 
-	resp, err := c.Get(url) //nolint: gosec
+	resp, err := c.Get(url)
 	if err != nil {
-		log.Fatalf("unable to fetch today's wordle: %v", err)
+		return "", 0, fmt.Errorf("unable to fetch today's wordle: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", 0, fmt.Errorf("NYT API returned a non-200 status: %v", resp.StatusCode)
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		log.Fatalf("unable to decode today's wordle json response: %v", err)
+		return "", 0, fmt.Errorf("unable to decode today's wordle json response: %v", err)
 	}
 
-	return strings.ToUpper(r.Solution), r.Number
+	return strings.ToUpper(r.Solution), r.Number, nil
 }
