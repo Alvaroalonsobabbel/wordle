@@ -26,9 +26,7 @@ func main() {
 
 	status, err := status.Game().Load()
 	if err != nil {
-		fmt.Println(err)
-
-		return
+		log.Fatal(err)
 	}
 
 	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
