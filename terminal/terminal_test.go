@@ -1,6 +1,7 @@
 package terminal
 
 import (
+	"fmt"
 	"io"
 	"testing"
 
@@ -53,5 +54,34 @@ func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 		wordle:   wordle,
 		keyboard: newKeyboard(wordle, render),
 		round:    newRound(wordle, render),
+	}
+}
+
+func TestFinishingMessage(t *testing.T) {
+	tests := []struct {
+		misses      int
+		expectedMsg string
+	}{
+		{0, "Genius"},
+		{1, "Magnificent"},
+		{2, "Impressive"},
+		{3, "Splendid"},
+		{4, "Great"},
+		{5, "Phew!"},
+		{6, "HELLO"},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprintf("guessing in %d attempts returns %s", test.misses+1, test.expectedMsg), func(t *testing.T) {
+			wordle := wordle.NewGame(wordle.WithCustomWord("HELLO"))
+			terminal := New(wordle)
+			for range test.misses {
+				assert.NoError(t, wordle.Try("CHAIR"))
+			}
+			if test.misses < 6 {
+				assert.NoError(t, wordle.Try("HELLO"))
+			}
+			assert.Equal(t, test.expectedMsg, terminal.finishingMsg())
+		})
 	}
 }

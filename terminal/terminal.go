@@ -25,7 +25,7 @@ const (
 
 	title            = "\033[H\033[2J\033[1m6 attempts to find a 5-letter word\n\033[0m"
 	postGameMenu     = "\033[15;0H(s)hare (e)xit"
-	message          = "\033[10;0H\x1b[3m%s\x1b[0m"
+	italicFooter     = "\033[10;0H\x1b[3m%s\x1b[0m"
 	greenBackground  = "\x1b[7m\x1b[32m %s \x1b[0m"
 	yellowBackground = "\x1b[7m\x1b[33m %s \x1b[0m"
 	greyBackground   = "\x1b[7m\x1b[90m %s \x1b[0m"
@@ -70,14 +70,7 @@ func (t *terminal) Start() {
 }
 
 func (t *terminal) game() {
-	for {
-		ok, msg := t.wordle.Finish()
-		if ok {
-			t.render.string(fmt.Sprintf(message, msg))
-
-			break
-		}
-
+	for !t.wordle.Finish() {
 		buf, quit := t.read()
 		if quit {
 			return
@@ -86,6 +79,7 @@ func (t *terminal) game() {
 		t.processInput(buf[0])
 	}
 
+	t.render.string(fmt.Sprintf(italicFooter, t.finishingMsg()))
 	t.postGame()
 }
 
@@ -159,6 +153,24 @@ func (t *terminal) initialScreen() {
 	for i := range 6 {
 		t.round.print(i)
 	}
+}
+
+func (t *terminal) finishingMsg() string {
+	var (
+		message       = t.wordle.Wordle
+		finishMessage = map[int]string{
+			1: "Genius",
+			2: "Magnificent",
+			3: "Impressive",
+			4: "Splendid",
+			5: "Great",
+			6: "Phew!",
+		}
+	)
+	if string(t.wordle.Discovered[:]) == t.wordle.Wordle {
+		message = finishMessage[t.wordle.Round]
+	}
+	return message
 }
 
 func startRawConsole() func() {

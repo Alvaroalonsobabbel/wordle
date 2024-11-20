@@ -1,10 +1,10 @@
 package wordle
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -115,68 +115,24 @@ func TestTry(t *testing.T) {
 func TestFinish(t *testing.T) {
 	t.Run("finish returns false while game is running", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-		err := wordle.Try("WORLD")
-		assert.NoError(t, err)
-
-		ok, msg := wordle.Finish()
-		assert.False(t, ok)
-		assert.Empty(t, msg)
+		assert.NoError(t, wordle.Try("WORLD"))
+		assert.False(t, wordle.Finish())
 	})
 
 	t.Run("finish returns true if game ends due to win", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-		err := wordle.Try("WORLD")
-		assert.NoError(t, err)
-
-		ok, msg := wordle.Finish()
-		assert.False(t, ok)
-		assert.Empty(t, msg)
-
-		err = wordle.Try("HELLO")
-		assert.NoError(t, err)
-
-		ok, _ = wordle.Finish()
-		assert.True(t, ok)
+		assert.NoError(t, wordle.Try("WORLD"))
+		assert.False(t, wordle.Finish())
+		assert.NoError(t, wordle.Try("HELLO"))
+		assert.True(t, wordle.Finish())
 	})
 
-	t.Run("finishing messages", func(t *testing.T) {
-		tests := []struct {
-			misses      int
-			expectedMsg string
-		}{
-			{0, "Genius"},
-			{1, "Magnificent"},
-			{2, "Impressive"},
-			{3, "Splendid"},
-			{4, "Great"},
-			{5, "Phew!"},
-		}
-
-		for _, test := range tests {
-			wordle := NewGame(WithCustomWord("HELLO"))
-			for range test.misses {
-				err := wordle.Try("CHAIR")
-				assert.NoError(t, err)
-			}
-			err := wordle.Try("HELLO")
-			assert.NoError(t, err)
-
-			ok, msg := wordle.Finish()
-			assert.True(t, ok)
-			assert.Equal(t, test.expectedMsg, msg)
-		}
-	})
-
-	t.Run("finish returns true if game ends due to lose and msg is current wordle", func(t *testing.T) {
+	t.Run("finish returns true if game ends due to lose", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("HELLO"))
-
 		for range 6 {
-			wordle.Try("WORLD") //nolint: errcheck
+			assert.NoError(t, wordle.Try("WORLD"))
 		}
-
-		ok, msg := wordle.Finish()
-		assert.True(t, ok)
-		assert.Equal(t, "HELLO", msg)
+		assert.True(t, wordle.Finish())
 	})
 }
 
@@ -194,20 +150,54 @@ func TestIsAllowed(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-type mockNYTAPI struct{}
+type mockNYTAPI struct {
+	resp *http.Response
+}
 
-func (mockNYTAPI) RoundTrip(*http.Request) (*http.Response, error) {
-	body := `{"solution": "hello", "days_since_launch": 123}`
-	return &http.Response{
-		StatusCode: http.StatusOK,
-		Body:       io.NopCloser(bytes.NewReader([]byte(body))),
-	}, nil
+func (m *mockNYTAPI) RoundTrip(*http.Request) (*http.Response, error) {
+	return m.resp, nil
 }
 
 func TestFetchDailyWordle(t *testing.T) {
-	client := &http.Client{Transport: &mockNYTAPI{}}
-	word, day := fetchTodaysWordle(client)
+	tests := []struct {
+		name     string
+		mockResp *http.Response
+		wantErr  bool
+	}{
+		{
+			name: "happy path",
+			mockResp: &http.Response{
+				Body:       io.NopCloser(strings.NewReader(`{"solution": "hello", "days_since_launch": 123}`)),
+				StatusCode: http.StatusOK,
+			},
+		},
+		{
+			name:     "NYT API not responding with 200",
+			mockResp: &http.Response{StatusCode: http.StatusNotFound},
+			wantErr:  true,
+		},
+		{
+			name: "unable to decode json body",
+			mockResp: &http.Response{
+				Body:       io.NopCloser(strings.NewReader(`"solution": "hello", "days_since_launch": 123}`)),
+				StatusCode: http.StatusOK,
+			},
+			wantErr: true,
+		},
+	}
 
-	assert.Equal(t, "HELLO", word)
-	assert.Equal(t, 123, day)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client := &http.Client{Transport: &mockNYTAPI{resp: test.mockResp}}
+			word, day, err := fetchTodaysWordle(client)
+
+			if test.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.Equal(t, "HELLO", word)
+			assert.Equal(t, 123, day)
+		})
+	}
 }
