@@ -66,7 +66,7 @@ func TestSaveGame(t *testing.T) {
 
 	err := status.Save(wordle)
 	assert.NoError(t, err)
-	want := `{"round":0,"puzzle_number":0,"wordle":"CHAIR","hard_mode":true,"results":null,"discovered":[0,0,0,0,0],"hints":null}
+	want := `{"round":0,"puzzle_number":0,"wordle":"CHAIR","hard_mode":true,"results":null,"discovered":[0,0,0,0,0],"hints":null,"used":null}
 `
 	assert.Equal(t, want, string(mockFile.data))
 }

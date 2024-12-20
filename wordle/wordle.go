@@ -37,6 +37,7 @@ type Status struct {
 	Results      [][]map[rune]int `json:"results"`
 	Discovered   [5]rune          `json:"discovered"`
 	Hints        []rune           `json:"hints"`
+	Used         []rune           `json:"used"`
 
 	allowedWords []string
 }
@@ -110,6 +111,7 @@ func (s *Status) result(word string) {
 
 	for i, v := range word {
 		currentWord = append(currentWord, map[rune]int{v: Absent})
+		s.Used = append(s.Used, v)
 
 		if v == rune(s.Wordle[i]) {
 			currentWord[i][v] = Correct
