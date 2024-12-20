@@ -11,7 +11,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/wordle"
 )
 
-const VERSION = "v0.4.7"
+const VERSION = "v0.4.8"
 
 const (
 	hardModeFlag     = "hard"
