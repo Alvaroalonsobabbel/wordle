@@ -40,7 +40,7 @@ func TestRoundPrint(t *testing.T) {
 
 	t.Run("after a round exist in wordle status it prints the status with color", func(t *testing.T) {
 		buf.Reset()
-		wordle.Try("SCORE") //nolint: errcheck
+		assert.NoError(t, wordle.Try("SCORE"))
 		round.print(0)
 		render.wg.Wait()
 		want := "\x1b[3;9H\x1b[7m\x1b[90m S \x1b[0m\x1b[7m\x1b[33m C \x1b[0m\x1b[7m\x1b[32m O \x1b[0m\x1b[7m\x1b[32m R \x1b[0m\x1b[7m\x1b[32m E \x1b[0m "
@@ -57,18 +57,13 @@ func TestRoundPrint(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	t.Run("adding one letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		render := newRender(io.Discard)
-		round := newRound(wordle, render)
-
+		round := newRound(wordle.NewGame(wordle.WithCustomWord("CHORE")), newRender(io.Discard))
 		round.add("A")
 		assert.Equal(t, "A", round.status[0])
 	})
 
 	t.Run("adding five consecutive letters", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		render := newRender(io.Discard)
-		round := newRound(wordle, render)
+		round := newRound(wordle.NewGame(wordle.WithCustomWord("CHORE")), newRender(io.Discard))
 		letters := []string{"A", "B", "C", "D", "E"}
 
 		for _, l := range letters {
@@ -81,9 +76,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding more than 5 letters does not increment the counter nor adds another letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		render := newRender(io.Discard)
-		round := newRound(wordle, render)
+		round := newRound(wordle.NewGame(wordle.WithCustomWord("CHORE")), newRender(io.Discard))
 		letters := []string{"A", "B", "C", "D", "E", "F"}
 
 		for _, l := range letters {
@@ -99,22 +92,18 @@ func TestAdd(t *testing.T) {
 
 func TestBackspace(t *testing.T) {
 	t.Run("reverts the counter and replaces the letter with underscore", func(t *testing.T) {
-		w := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		r := newRender(io.Discard)
-		round := newRound(w, r)
+		round := newRound(wordle.NewGame(wordle.WithCustomWord("CHORE")), newRender(io.Discard))
 		round.add("A")
 		round.add("B")
-		round.backspace()
+		round.add("←")
 
 		assert.Equal(t, "_", round.status[1])
 		assert.Equal(t, 1, round.index)
 	})
 
 	t.Run("when counter is 0, backspace has no effect", func(t *testing.T) {
-		w := wordle.NewGame(wordle.WithCustomWord("CHORE"))
-		r := newRender(io.Discard)
-		round := newRound(w, r)
-		round.backspace()
+		round := newRound(wordle.NewGame(wordle.WithCustomWord("CHORE")), newRender(io.Discard))
+		round.add("←")
 
 		assert.Equal(t, "_", round.status[0])
 		assert.Equal(t, 0, round.index)

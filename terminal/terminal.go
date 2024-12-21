@@ -107,7 +107,7 @@ func (t *terminal) processInput(b byte) {
 
 	switch b {
 	case backspace:
-		t.round.backspace()
+		t.round.add("←")
 	case enter:
 		if t.round.index < 5 {
 			t.render.err("Not enough letters")

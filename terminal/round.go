@@ -104,23 +104,20 @@ func (r *round) renderResult() {
 func (r *round) add(s string) {
 	defer r.print(r.wordle.Round)
 
-	if r.index == 5 {
-		return
+	switch s {
+	case "←":
+		if r.index == 0 {
+			return
+		}
+		r.index--
+		r.status[r.index] = "_"
+	default:
+		if r.index == 5 {
+			return
+		}
+		r.status[r.index] = s
+		r.index++
 	}
-
-	r.status[r.index] = s
-	r.index++
-}
-
-func (r *round) backspace() {
-	defer r.print(r.wordle.Round)
-
-	if r.index == 0 {
-		return
-	}
-
-	r.index--
-	r.status[r.index] = "_"
 }
 
 func (r *round) reset() {
