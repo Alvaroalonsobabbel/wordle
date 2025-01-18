@@ -8,10 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Alvaroalonsobabbel/wordle/status"
 	"github.com/Alvaroalonsobabbel/wordle/wordle"
 	"github.com/atotto/clipboard"
-	"golang.org/x/term"
 )
 
 const (
@@ -29,8 +27,6 @@ const (
 	greenBackground  = "\x1b[7m\x1b[32m %s \x1b[0m"
 	yellowBackground = "\x1b[7m\x1b[33m %s \x1b[0m"
 	greyBackground   = "\x1b[7m\x1b[90m %s \x1b[0m"
-	hideCursor       = "\033[?25l"
-	showCursor       = "\033[13;0H\n\r\033[?25h"
 	emptyChar        = " %s "
 )
 
@@ -55,21 +51,9 @@ func New(w *wordle.Status) *terminal { //nolint: revive
 }
 
 func (t *terminal) Start() {
-	restoreConsole := startRawConsole()
-
-	defer func() {
-		t.render.close()
-		restoreConsole()
-		if err := status.Game().Save(t.wordle); err != nil {
-			fmt.Println(err)
-		}
-	}()
-
+	defer t.render.close()
 	t.initialScreen()
-	t.game()
-}
-
-func (t *terminal) game() {
+	// game loop
 	for !t.wordle.Finish() {
 		buf, quit := t.read()
 		if quit {
@@ -80,12 +64,9 @@ func (t *terminal) game() {
 	}
 
 	t.render.string(fmt.Sprintf(italicFooter, t.finishingMsg()))
-	t.postGame()
-}
-
-func (t *terminal) postGame() {
 	t.render.string(postGameMenu)
 
+	// post game loop
 	for {
 		buf, quit := t.read()
 		if quit {
@@ -164,19 +145,4 @@ func (t *terminal) finishingMsg() string {
 		message = finishMessage[t.wordle.Round]
 	}
 	return message
-}
-
-func startRawConsole() func() {
-	fmt.Print(hideCursor)
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
-	if err != nil {
-		log.Fatalf("Error setting terminal to raw mode: %v", err)
-	}
-
-	return func() {
-		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
-			log.Fatalf("unable to retore the terminal original state: %v", err)
-		}
-		fmt.Print(showCursor)
-	}
 }
