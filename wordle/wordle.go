@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -52,6 +53,9 @@ func NewGame(conf ...ConfigSetter) *Status {
 }
 
 func (s *Status) Try(word string) error {
+	if err := s.checkWord(word); err != nil {
+		return err
+	}
 	if err := s.isAllowed(word); err != nil {
 		return err
 	}
@@ -65,6 +69,19 @@ func (s *Status) Try(word string) error {
 
 func (s *Status) Finish() bool {
 	return string(s.Discovered[:]) == s.Wordle || s.Round > 5
+}
+
+func (s *Status) checkWord(word string) error {
+	if len(word) < 5 {
+		return fmt.Errorf("Not enough letters") //nolint: stylecheck
+	}
+	if len(word) > 5 {
+		return fmt.Errorf("Too many letters") //nolint: stylecheck
+	}
+	if !regexp.MustCompile(`^[A-Z]*$`).MatchString(word) {
+		return fmt.Errorf("Only letters are allowed") //nolint: stylecheck
+	}
+	return nil
 }
 
 func (s *Status) isAllowed(word string) error {
@@ -135,23 +152,19 @@ func (s *Status) result(word string) {
 }
 
 func fetchTodaysWordle(c *http.Client) (string, int, error) {
-	var (
-		url = fmt.Sprintf(wordleBaseURL, time.Now().Format(time.DateOnly))
-		r   = struct {
-			Solution string `json:"solution"`
-			Number   int    `json:"days_since_launch"`
-		}{}
-	)
-	resp, err := c.Get(url)
+	resp, err := c.Get(fmt.Sprintf(wordleBaseURL, time.Now().Format(time.DateOnly)))
 	if err != nil {
 		return "", 0, fmt.Errorf("unable to fetch today's wordle: %v", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return "", 0, fmt.Errorf("NYT API returned a non-200 status: %v", resp.StatusCode)
 	}
+	r := struct {
+		Solution string `json:"solution"`
+		Number   int    `json:"days_since_launch"`
+	}{}
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
 		return "", 0, fmt.Errorf("unable to decode today's wordle json response: %v", err)
 	}
-
 	return strings.ToUpper(r.Solution), r.Number, nil
 }

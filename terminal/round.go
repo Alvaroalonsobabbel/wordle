@@ -2,6 +2,7 @@ package terminal
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Alvaroalonsobabbel/wordle/wordle"
@@ -27,6 +28,10 @@ func newRound(w *wordle.Status, r *render) *round { //nolint: revive
 		wordle: w,
 		status: []string{"_", "_", "_", "_", "_"},
 	}
+}
+
+func (r *round) word() string {
+	return strings.ReplaceAll(strings.Join(r.status, ""), "_", "")
 }
 
 func (r *round) print(round int) {

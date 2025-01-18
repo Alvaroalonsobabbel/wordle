@@ -92,6 +92,28 @@ func TestTry(t *testing.T) {
 		assert.Equal(t, expectedError, err)
 	})
 
+	t.Run("checkWord returns error if word is not A-Z 5 characters long", func(t *testing.T) {
+		test := []struct {
+			word    string
+			wantErr error
+		}{
+			{"A", fmt.Errorf("Not enough letters")},
+			{"AAAA", fmt.Errorf("Not enough letters")},
+			{"AAAAAA", fmt.Errorf("Too many letters")},
+			{"", fmt.Errorf("Not enough letters")},
+			{"   ", fmt.Errorf("Not enough letters")},
+			{"12345", fmt.Errorf("Only letters are allowed")},
+		}
+		for _, tt := range test {
+			t.Run(tt.word, func(t *testing.T) {
+				wordle := NewGame(WithCustomWord("WORLD"))
+				err := wordle.Try(tt.word)
+				assert.Error(t, err)
+				assert.Equal(t, tt.wantErr, err)
+			})
+		}
+	})
+
 	t.Run("hard mode: discovered words must be used in the correct place", func(t *testing.T) {
 		wordle := NewGame(WithCustomWord("WORLD"), WithHardMode(true))
 		err := wordle.Try("WEARY")

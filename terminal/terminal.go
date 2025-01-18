@@ -109,14 +109,7 @@ func (t *terminal) processInput(b byte) {
 	case backspace:
 		t.round.backspace()
 	case enter:
-		if t.round.index < 5 {
-			t.render.err("Not enough letters")
-			t.round.shake()
-			return
-		}
-
-		lastWord := strings.Join(t.round.status, "")
-		if err := t.wordle.Try(lastWord); err != nil {
+		if err := t.wordle.Try(t.round.word()); err != nil {
 			t.render.err(err.Error())
 			t.round.shake()
 			return
