@@ -47,7 +47,8 @@ func TestRoundPrint(t *testing.T) {
 		assert.Equal(t, want, buf.String())
 
 		buf.Reset()
-		round.reset()
+		round.index = 0
+		round.status = [5]string{}
 		round.print(1)
 		render.wg.Wait()
 		want = "\x1b[4;9H _  _  _  _  _  "
@@ -116,7 +117,7 @@ func TestBackspace(t *testing.T) {
 		round := newRound(w, r)
 		round.backspace()
 
-		assert.Equal(t, "_", round.status[0])
+		assert.Equal(t, "", round.status[0])
 		assert.Equal(t, 0, round.index)
 	})
 }

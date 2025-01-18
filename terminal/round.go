@@ -16,7 +16,7 @@ const (
 
 type round struct {
 	index     int
-	status    []string
+	status    [5]string
 	animation string
 	wordle    *wordle.Status
 	render    *render
@@ -26,18 +26,18 @@ func newRound(w *wordle.Status, r *render) *round { //nolint: revive
 	return &round{
 		render: r,
 		wordle: w,
-		status: []string{"_", "_", "_", "_", "_"},
 	}
 }
 
 func (r *round) word() string {
-	return strings.ReplaceAll(strings.Join(r.status, ""), "_", "")
+	return strings.Join(r.status[:], "")
 }
 
 func (r *round) print(round int) {
 	p := fmt.Sprintf(roundPos, round+roundOffset)
 
-	if round < len(r.wordle.Results) {
+	switch round < len(r.wordle.Results) {
+	case true:
 		for _, b := range r.wordle.Results[round] {
 			for k, v := range b {
 				var color string
@@ -52,9 +52,12 @@ func (r *round) print(round int) {
 				p += fmt.Sprintf(color, string(k))
 			}
 		}
-	} else if r.wordle.Round < 6 {
+	default:
 		p += r.animation
 		for _, s := range r.status {
+			if s == "" {
+				s = "_"
+			}
 			p += fmt.Sprintf(emptyChar, s)
 		}
 	}
@@ -77,8 +80,11 @@ func (r *round) shake() {
 	}()
 }
 
-func (r *round) renderResult() {
-	defer r.reset()
+func (r *round) result() {
+	defer func() {
+		r.index = 0
+		r.status = [5]string{}
+	}()
 
 	var (
 		// results are displyed after wordle.Try increments the internal
@@ -126,9 +132,4 @@ func (r *round) backspace() {
 
 	r.index--
 	r.status[r.index] = "_"
-}
-
-func (r *round) reset() {
-	r.index = 0
-	r.status = []string{"_", "_", "_", "_", "_"}
 }

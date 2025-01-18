@@ -96,7 +96,7 @@ func (t *terminal) processInput(b byte) {
 			return
 		}
 
-		t.round.renderResult()
+		t.round.result()
 		t.keyboard.print()
 	default:
 		c := strings.ToUpper(string(b))
