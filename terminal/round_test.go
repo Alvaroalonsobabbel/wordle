@@ -120,3 +120,16 @@ func TestBackspace(t *testing.T) {
 		assert.Equal(t, 0, round.index)
 	})
 }
+
+func TestWord(t *testing.T) {
+	w := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+	r := newRender(io.Discard)
+	round := newRound(w, r)
+	round.add("A")
+	round.add("B")
+	assert.Equal(t, "AB", round.word())
+	round.add("C")
+	round.add("D")
+	round.add("E")
+	assert.Equal(t, "ABCDE", round.word())
+}

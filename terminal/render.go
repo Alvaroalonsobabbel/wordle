@@ -54,16 +54,13 @@ func (r *render) strMgr() {
 func (r *render) errMgr() {
 	for log := range r.errCh {
 		r.errQ = append([]string{log}, r.errQ...)
-		time.AfterFunc(r.errDur, r.rmLastErr)
+		time.AfterFunc(r.errDur, func() {
+			defer r.wg.Done()
+			r.errQ = r.errQ[:len(r.errQ)-1]
+			r.printErrQ()
+		})
 		r.printErrQ()
 	}
-}
-
-func (r *render) rmLastErr() {
-	defer r.wg.Done()
-
-	r.errQ = r.errQ[:len(r.errQ)-1]
-	r.printErrQ()
 }
 
 func (r *render) printErrQ() {
