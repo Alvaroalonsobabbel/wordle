@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -42,8 +43,33 @@ type Status struct {
 	allowedWords []string
 }
 
-func NewGame(conf ...ConfigSetter) *Status {
-	s := &Status{}
+type ConfigSetter func(*Status)
+
+func WithSavedWordle(saved *Status) ConfigSetter {
+	return func(status *Status) {
+		if saved != nil && saved.Wordle == status.Wordle {
+			*status = *saved
+		}
+	}
+}
+
+func WithCustomWord(w string) ConfigSetter {
+	return func(g *Status) {
+		*g = Status{Wordle: w, HardMode: g.HardMode}
+	}
+}
+
+func NewGame(hard bool, conf ...ConfigSetter) *Status {
+	return newCustomClientGame(hard, http.DefaultClient, conf...)
+}
+
+func newCustomClientGame(hard bool, httpClient *http.Client, conf ...ConfigSetter) *Status {
+	w, pn, err := fetchTodaysWordle(httpClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	s := &Status{HardMode: hard, Wordle: w, PuzzleNumber: pn}
+
 	for _, confSetter := range conf {
 		confSetter(s)
 	}

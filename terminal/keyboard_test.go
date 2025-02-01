@@ -50,7 +50,7 @@ func TestPrintKey(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.initialWord+": "+strings.Join(test.tries, " "), func(t *testing.T) {
-			w := wordle.NewGame(wordle.WithCustomWord(test.initialWord))
+			w := &wordle.Status{Wordle: test.initialWord}
 			kb := newKeyboard(w, newRender(io.Discard))
 
 			for _, word := range test.tries {

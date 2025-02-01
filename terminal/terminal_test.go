@@ -47,7 +47,7 @@ func TestRead(t *testing.T) {
 
 func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 	render := newRender(w)
-	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+	wordle := &wordle.Status{Wordle: "CHORE"}
 	return &terminal{
 		reader:   r,
 		render:   render,
@@ -73,7 +73,7 @@ func TestFinishingMessage(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(fmt.Sprintf("guessing in %d attempts returns %s", test.misses+1, test.expectedMsg), func(t *testing.T) {
-			wordle := wordle.NewGame(wordle.WithCustomWord("HELLO"))
+			wordle := &wordle.Status{Wordle: "HELLO"}
 			terminal := New(wordle)
 			for range test.misses {
 				assert.NoError(t, wordle.Try("CHAIR"))
