@@ -32,7 +32,7 @@ func TestRender(t *testing.T) {
 
 		render.err("123")
 		render.wg.Wait()
-		assert.Equal(t, "\x1b[3;28H\x1b[K\x1b[4;28H\x1b[K\x1b[3;28H\x1b[3m\x1b[30m\x1b[47m 123 \x1b[0m\x1b[3;28H\x1b[K", buf.String())
+		assert.Equal(t, "\x1b[3;28H\x1b[K\x1b[4;28H\x1b[K\x1b[5;28H\x1b[K\x1b[6;28H\x1b[K\x1b[7;28H\x1b[K\x1b[8;28H\x1b[K\x1b[3;28H\x1b[3m\x1b[30m\x1b[47m 123 \x1b[0m\x1b[3;28H\x1b[K\x1b[4;28H\x1b[K\x1b[5;28H\x1b[K\x1b[6;28H\x1b[K\x1b[7;28H\x1b[K\x1b[8;28H\x1b[K", buf.String())
 	})
 
 	t.Run("prints str to w", func(t *testing.T) {
