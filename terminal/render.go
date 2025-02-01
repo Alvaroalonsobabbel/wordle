@@ -67,12 +67,14 @@ func (r *render) rmLastErr() {
 }
 
 func (r *render) printErrQ() {
-	for i := range len(r.errQ) + 1 {
+	for i := range 6 {
 		fmt.Fprintf(r.w, "\033[%d;28H\033[K", i+errOffset)
 	}
 
 	for i, log := range r.errQ {
-		fmt.Fprintf(r.w, "\033[%d;28H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log)
+		if i < 6 {
+			fmt.Fprintf(r.w, "\033[%d;28H\x1b[3m\x1b[30m\x1b[47m %s \x1b[0m", i+errOffset, log)
+		}
 	}
 }
 

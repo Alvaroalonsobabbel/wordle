@@ -11,7 +11,7 @@ import (
 	"github.com/Alvaroalonsobabbel/wordle/wordle"
 )
 
-const VERSION = "v0.4.8"
+const VERSION = "v0.4.9"
 
 const (
 	hardModeFlag     = "hard"
@@ -29,12 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wordle := wordle.NewGame(wordle.WithDalyWordle(), wordle.WithHardMode(hardMode))
-	if status != nil && status.Wordle == wordle.Wordle {
-		wordle = status
-	}
-
-	terminal.New(wordle).Start()
+	terminal.New(wordle.NewGame(hardMode, wordle.WithSavedWordle(status))).Start()
 }
 
 func evalOptions() {

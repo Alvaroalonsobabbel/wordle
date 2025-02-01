@@ -9,9 +9,9 @@ import (
 
 func TestShareString(t *testing.T) {
 	t.Run("win in two tries", func(t *testing.T) {
-		wordle := NewGame(WithCustomWord("HELLO"))
-		wordle.Try("CELLO") //nolint: errcheck
-		wordle.Try("HELLO") //nolint: errcheck
+		wordle := &Status{Wordle: "HELLO"}
+		assert.NoError(t, wordle.Try("CELLO"))
+		assert.NoError(t, wordle.Try("HELLO"))
 
 		got := wordle.Share()
 		want := "Wordle 0 2/6*" + newLine +
@@ -22,11 +22,10 @@ func TestShareString(t *testing.T) {
 	})
 
 	t.Run("win in 6 tries", func(t *testing.T) {
-		wordle := NewGame(WithCustomWord("LIGHT"))
+		wordle := &Status{Wordle: "LIGHT"}
 		tries := []string{"SCARF", "MIGHT", "FIGHT", "TIGHT", "RIGHT", "LIGHT"}
 		for _, word := range tries {
-			err := wordle.Try(word)
-			assert.NoError(t, err)
+			assert.NoError(t, wordle.Try(word))
 		}
 
 		got := wordle.Share()
@@ -39,11 +38,10 @@ func TestShareString(t *testing.T) {
 	})
 
 	t.Run("lose", func(t *testing.T) {
-		wordle := NewGame(WithCustomWord("LIGHT"))
+		wordle := &Status{Wordle: "LIGHT"}
 		word := "SCARF"
 		for range 6 {
-			err := wordle.Try(word)
-			assert.NoError(t, err)
+			assert.NoError(t, wordle.Try(word))
 		}
 
 		got := wordle.Share()

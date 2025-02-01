@@ -61,7 +61,7 @@ func TestLoadGame(t *testing.T) {
 
 func TestSaveGame(t *testing.T) {
 	mockFile := &mockFile{}
-	wordle := wordle.NewGame(wordle.WithCustomWord("CHAIR"), wordle.WithHardMode(true))
+	wordle := &wordle.Status{Wordle: "CHAIR", HardMode: true}
 	status := &status{open: &mockOpener{f: mockFile}}
 
 	err := status.Save(wordle)

@@ -10,7 +10,7 @@ import (
 )
 
 func TestRoundPrint(t *testing.T) {
-	wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+	wordle := &wordle.Status{Wordle: "CHORE"}
 	buf := &bytes.Buffer{}
 	render := newRender(buf)
 	round := newRound(wordle, render)
@@ -57,7 +57,7 @@ func TestRoundPrint(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	t.Run("adding one letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+		wordle := &wordle.Status{Wordle: "CHORE"}
 		render := newRender(io.Discard)
 		round := newRound(wordle, render)
 
@@ -66,7 +66,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding five consecutive letters", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+		wordle := &wordle.Status{Wordle: "CHORE"}
 		render := newRender(io.Discard)
 		round := newRound(wordle, render)
 		letters := []string{"A", "B", "C", "D", "E"}
@@ -81,7 +81,7 @@ func TestAdd(t *testing.T) {
 	})
 
 	t.Run("adding more than 5 letters does not increment the counter nor adds another letter", func(t *testing.T) {
-		wordle := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+		wordle := &wordle.Status{Wordle: "CHORE"}
 		render := newRender(io.Discard)
 		round := newRound(wordle, render)
 		letters := []string{"A", "B", "C", "D", "E", "F"}
@@ -99,7 +99,7 @@ func TestAdd(t *testing.T) {
 
 func TestBackspace(t *testing.T) {
 	t.Run("reverts the counter and replaces the letter with underscore", func(t *testing.T) {
-		w := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+		w := &wordle.Status{Wordle: "CHORE"}
 		r := newRender(io.Discard)
 		round := newRound(w, r)
 		round.add("A")
@@ -111,7 +111,7 @@ func TestBackspace(t *testing.T) {
 	})
 
 	t.Run("when counter is 0, backspace has no effect", func(t *testing.T) {
-		w := wordle.NewGame(wordle.WithCustomWord("CHORE"))
+		w := &wordle.Status{Wordle: "CHORE"}
 		r := newRender(io.Discard)
 		round := newRound(w, r)
 		round.backspace()
