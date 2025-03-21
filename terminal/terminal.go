@@ -158,17 +158,10 @@ func (t *terminal) initialScreen() {
 func (t *terminal) finishingMsg() string {
 	var (
 		message       = t.wordle.Wordle
-		finishMessage = map[int]string{
-			1: "Genius",
-			2: "Magnificent",
-			3: "Impressive",
-			4: "Splendid",
-			5: "Great",
-			6: "Phew!",
-		}
+		finishMessage = []string{"Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew!"}
 	)
 	if string(t.wordle.Discovered[:]) == t.wordle.Wordle {
-		message = finishMessage[t.wordle.Round]
+		message = finishMessage[t.wordle.Round-1]
 	}
 	return message
 }
