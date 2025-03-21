@@ -58,9 +58,7 @@ func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 }
 
 func TestFinishingMessage(t *testing.T) {
-	wantMsg := []string{"Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew!"}
-
-	for miss, msg := range wantMsg {
+	for miss, msg := range finishMessage {
 		t.Run(fmt.Sprintf("guessing in %d attempts returns %s", miss+1, msg), func(t *testing.T) {
 			wordle := &wordle.Status{Wordle: "HELLO"}
 			terminal := New(wordle)

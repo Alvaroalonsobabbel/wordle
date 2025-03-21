@@ -34,6 +34,8 @@ const (
 	emptyChar        = " %s "
 )
 
+var finishMessage = []string{"Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew!"}
+
 type terminal struct {
 	wordle   *wordle.Status
 	keyboard *keyboard
@@ -156,10 +158,7 @@ func (t *terminal) initialScreen() {
 }
 
 func (t *terminal) finishingMsg() string {
-	var (
-		message       = t.wordle.Wordle
-		finishMessage = []string{"Genius", "Magnificent", "Impressive", "Splendid", "Great", "Phew!"}
-	)
+	message := t.wordle.Wordle
 	if string(t.wordle.Discovered[:]) == t.wordle.Wordle {
 		message = finishMessage[t.wordle.Round-1]
 	}
