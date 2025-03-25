@@ -58,30 +58,17 @@ func newTestTerminal(w io.Writer, r io.Reader) *terminal { //nolint: revive
 }
 
 func TestFinishingMessage(t *testing.T) {
-	tests := []struct {
-		misses      int
-		expectedMsg string
-	}{
-		{0, "Genius"},
-		{1, "Magnificent"},
-		{2, "Impressive"},
-		{3, "Splendid"},
-		{4, "Great"},
-		{5, "Phew!"},
-		{6, "HELLO"},
-	}
-
-	for _, test := range tests {
-		t.Run(fmt.Sprintf("guessing in %d attempts returns %s", test.misses+1, test.expectedMsg), func(t *testing.T) {
+	for miss, msg := range finishMessage {
+		t.Run(fmt.Sprintf("guessing in %d attempts returns %s", miss+1, msg), func(t *testing.T) {
 			wordle := &wordle.Status{Wordle: "HELLO"}
 			terminal := New(wordle)
-			for range test.misses {
+			for range miss {
 				assert.NoError(t, wordle.Try("CHAIR"))
 			}
-			if test.misses < 6 {
+			if miss < 6 {
 				assert.NoError(t, wordle.Try("HELLO"))
 			}
-			assert.Equal(t, test.expectedMsg, terminal.finishingMsg())
+			assert.Equal(t, msg, terminal.finishingMsg())
 		})
 	}
 }
